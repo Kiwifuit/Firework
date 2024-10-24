@@ -2,13 +2,22 @@ use std::ops::Deref;
 
 use serde::Deserialize;
 
-mod project;
-mod query;
+pub mod project;
+pub mod query;
 
 #[derive(Debug)]
-#[repr(transparent)]
 pub struct CurseResponse<T> {
   inner: T,
+  pub pagination: CursePagination,
+}
+
+#[derive(Debug, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct CursePagination {
+  pub index: u8,
+  pub page_size: u8,
+  pub result_count: u8,
+  pub total_count: u8,
 }
 
 impl<T> Deref for CurseResponse<T> {
@@ -21,7 +30,10 @@ impl<T> Deref for CurseResponse<T> {
 
 impl<T> CurseResponse<T> {
   pub fn new(inner: T) -> Self {
-    Self { inner }
+    Self {
+      inner,
+      pagination: CursePagination::default(),
+    }
   }
 }
 
@@ -33,12 +45,20 @@ where
   where
     D: serde::Deserializer<'de>,
   {
-    let data = serde_json::Map::deserialize(deserializer)?
+    let mut data = serde_json::Map::deserialize(deserializer)?;
+    let inner = data
       .remove("data")
-      .ok_or_else(|| serde::de::Error::missing_field("data"))?;
+      .ok_or_else(|| serde::de::Error::missing_field("data"))
+      .and_then(T::deserialize)
+      .map_err(serde::de::Error::custom)?;
 
-    let data: T = T::deserialize(data).map_err(serde::de::Error::custom)?;
-    Ok(Self { inner: data })
+    let pagination = data
+      .remove("pagination")
+      .ok_or_else(|| serde::de::Error::missing_field("pagination"))
+      .and_then(serde_json::from_value)
+      .map_err(serde::de::Error::custom)?;
+
+    Ok(Self { inner, pagination })
   }
 }
 
@@ -58,13 +78,19 @@ mod tests {
       {
         "data": {
           "name": "Samuel L Jackson"
+        },
+        "pagination": {
+          "index": 0,
+          "pageSize": 5,
+          "resultCount": 5,
+          "totalCount": 15
         }
       }
     "#;
 
     let data = serde_json::from_str::<CurseResponse<TestStruct>>(&json_data);
 
-    assert!(data.is_ok());
-    assert_eq!(data.unwrap().name, "Samuel L Jackson".to_string());
+    dbg!(data);
+    panic!();
   }
 }
