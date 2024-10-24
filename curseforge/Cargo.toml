@@ -15,7 +15,8 @@ log.workspace = true
 dotenv.workspace = true
 anyhow.workspace = true
 tokio.workspace = true
-
+env_logger.workspace = true
+serde_qs = "0.13.0"         # temporary
 
 [lints]
 workspace = true
