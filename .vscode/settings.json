@@ -9,6 +9,8 @@
     "tab_spaces=2"
   ],
   "[rust]": {
+    "editor.tabSize": 2,
+    "editor.detectIndentation": false,
     "editor.defaultFormatter": "rust-lang.rust-analyzer",
   },
 }
