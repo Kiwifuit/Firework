@@ -1,16 +1,39 @@
+use std::env::var;
+
+use anyhow::Context;
 use axum::routing::get;
 use axum::Router;
+use http::{HeaderValue, Method};
+use log::info;
+use owo_colors::OwoColorize;
 use tokio::net::TcpListener;
+use tower_http::cors::CorsLayer;
 
-async fn index() -> &'static str {
-  "Hello world!"
-}
+mod logger;
+mod routes;
+mod types;
 
 #[tokio::main(flavor = "multi_thread", worker_threads = 10)]
-async fn main() {
-  let app = Router::new().route("/", get(index));
+async fn main() -> anyhow::Result<()> {
+  logger::init().context("while initializing logger")?;
 
-  let server = TcpListener::bind("0.0.0.0:3030").await.unwrap();
+  info!("Good morning!");
+  let ip_addr = var("DMS_HOST").unwrap_or(String::from("0.0.0.0:3030"));
 
-  axum::serve(server, app).await.unwrap();
+  let cors = CorsLayer::new()
+    .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
+    .allow_methods(vec![Method::GET, Method::POST]);
+
+  let app = Router::new()
+    .route("/servers", get(routes::get_servers))
+    .layer(cors);
+
+  let server = TcpListener::bind(&ip_addr).await.unwrap();
+
+  info!("Listening on {}", ip_addr.green());
+  axum::serve(server, app)
+    .await
+    .context("while running backend server")?;
+
+  Ok(())
 }

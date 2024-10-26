@@ -1,10 +1,37 @@
 import { Title } from "@solidjs/meta";
 import { FaSolidPlus } from "solid-icons/fa";
-import { createSignal } from "solid-js";
-import ServerListItem from "~/components/ServerListItem";
+import {
+  createEffect,
+  createResource,
+  createSignal,
+  For,
+  Match,
+  Show,
+  Switch,
+} from "solid-js";
+
+const API_ENDPOINT = "http://localhost:3030";
+type ServerEntry = {
+  id: string;
+  online: boolean;
+  display_name: string;
+  description: string;
+  players: {
+    active: number;
+    total: number;
+  };
+  software: string;
+  modpack: string | null;
+};
 
 export default function Home() {
-  const [isOpen, setOpen] = createSignal(false);
+  // const [isOpen, setOpen] = createSignal(false);
+  const [serverList, setServerLists] = createSignal(new Array(5));
+  const [servers] = createResource(serverList, fetch_servers);
+
+  createEffect(() => {
+    console.log(serverList());
+  }, servers());
 
   return (
     <main class="mt-32 grid w-screen place-items-center">
@@ -19,7 +46,25 @@ export default function Home() {
             <FaSolidPlus class="m-auto" />
           </a>
         </div>
-        <ServerListItem
+        <Show when={servers.loading}>
+          <div>
+            <p>Loading...</p>
+          </div>
+        </Show>
+        <Switch>
+          <Match when={servers.error}>
+            <div>
+              <p>An error occurred while loading servers: "{servers.error}"</p>
+            </div>
+          </Match>
+          <Match when={serverList()}>
+            <For each={serverList()}>
+              {(data) => <p>{JSON.stringify(data)}</p>}
+            </For>{" "}
+          </Match>
+        </Switch>
+
+        {/* <ServerListItem
           id="server-1"
           online={true}
           display_name="Server 01 Name"
@@ -63,8 +108,14 @@ export default function Home() {
           players={{ total: 20, active: 20 }}
           modpack={null}
           software="Fabric 1.2.3 for Minecraft 1.20.1"
-        />
+        /> */}
       </div>
     </main>
   );
+}
+
+async function fetch_servers() {
+  const response = await fetch(`${API_ENDPOINT}/servers`);
+
+  return response.json();
 }

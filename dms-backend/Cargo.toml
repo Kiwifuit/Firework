@@ -11,17 +11,22 @@ modrinth = { path = "../modrinth", optional = true }
 hangar = { path = "../hangar", optional = true }
 temp-dir = { workspace = true, optional = true }
 
-log = { workspace = true, features = ["serde"] }
-# serde.workspace = true
-serde_json.workspace = true
+serde.workspace = true
+# serde_json.workspace = true
 thiserror.workspace = true
+anyhow.workspace = true
+log = { workspace = true, features = ["serde"] }
 tokio = { workspace = true, features = ["macros", "net", "rt-multi-thread"] }
 
 axum = "0.7.7"
+owo-colors = "4.1.0"
 chrono = { version = "0.4.38", default-features = false, features = [
   "std",
   "clock",
 ] }
+fern_colored = { version = "0.6.1", features = ["colored"] }
+tower-http = { version = "0.6.1", features = ["cors"] }
+http = "1.1.0"
 
 [build-dependencies]
 anyhow.workspace = true
