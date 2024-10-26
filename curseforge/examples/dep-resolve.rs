@@ -3,7 +3,6 @@ use std::vec;
 use anyhow::Context;
 use dotenv::dotenv;
 use log::info;
-use serde_qs::to_string;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -17,8 +16,11 @@ async fn main() -> anyhow::Result<()> {
     .categories(vec![420, 424, 421, 425])
     .game_versions(vec!["1.12.2".to_string()]);
 
-  dbg!(to_string(&query));
-  curse.get_mod(&query).await;
+  let curse_mods = curse.get_mod(&query).await?;
+
+  for curse_mod in curse_mods.iter() {
+    dbg!(curse_mod);
+  }
 
   Ok(())
 }

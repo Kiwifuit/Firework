@@ -1,9 +1,28 @@
 use std::ops::Deref;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 pub mod project;
 pub mod query;
+
+#[derive(Debug, Default, Serialize, Deserialize, Clone, Copy)]
+#[repr(u8)]
+pub enum ModLoader {
+  #[default]
+  Any = 0,
+  Forge = 1,
+  Cauldron = 2,
+  LiteLoader = 3,
+  Fabric = 4,
+  Quilt = 5,
+  NeoForge = 6,
+}
+
+impl ToString for ModLoader {
+  fn to_string(&self) -> String {
+    (*self as u8).to_string()
+  }
+}
 
 #[derive(Debug)]
 pub struct CurseResponse<T> {
@@ -88,9 +107,8 @@ mod tests {
       }
     "#;
 
-    let data = serde_json::from_str::<CurseResponse<TestStruct>>(&json_data);
+    let data = serde_json::from_str::<CurseResponse<TestStruct>>(json_data);
 
-    dbg!(data);
-    panic!();
+    assert!(data.is_ok_and(|d| d.name == "Samuel L Jackson"))
   }
 }

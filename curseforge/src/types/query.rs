@@ -1,54 +1,5 @@
-// use serde::{ser::SerializeSeq, Serialize};
-
-// use super::project::CurseMod;
-
-// #[derive(Debug)]
-// pub struct CurseMods {
-//   mods: Vec<CurseMod>,
-// }
-
-// impl Serialize for CurseMods {
-//   fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-//   where
-//     S: serde::Serializer,
-//   {
-//     let mut seq = serializer.serialize_seq(Some(self.mods.len()))?;
-
-//     for mod_data in &self.mods {
-//       seq.serialize_element(&mod_data.id)?;
-//     }
-
-//     seq.end()
-//   }
-// }
-
-// impl From<Vec<CurseMod>> for CurseMods {
-//   fn from(value: Vec<CurseMod>) -> Self {
-//     Self { mods: value }
-//   }
-// }
-
-// Idea: Might want to add a "growable"
-// API. Where you start with an empty
-// CurseMods struct and iteratively
-// fill it or something
-//
-// Something like this:
-// impl CurseMods {
-//   pub fn new() -> Self {
-//     Self {
-//       mods: vec![]
-//     }
-//   }
-
-//   pub fn add_mod(&mut self, new_mod: CurseMod) {
-//     self.mods.push(new_mod);
-//   }
-// }
-
-use serde::{ser::SerializeSeq, Serialize, Serializer};
-
-const CURSE_MINECRAFT_ID: u16 = 432;
+use super::ModLoader;
+use serde::{Serialize, Serializer};
 
 #[derive(Debug, Default, Clone, Copy)]
 #[repr(u8)]
@@ -86,25 +37,6 @@ pub enum OrderBy {
   Descending,
 }
 
-#[derive(Debug, Default, Serialize, Clone, Copy)]
-#[repr(u8)]
-pub enum ModLoader {
-  #[default]
-  Any = 0,
-  Forge = 1,
-  Cauldron = 2,
-  LiteLoader = 3,
-  Fabric = 4,
-  Quilt = 5,
-  NeoForge = 6,
-}
-
-impl ToString for ModLoader {
-  fn to_string(&self) -> String {
-    (*self as u8).to_string()
-  }
-}
-
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ModQueryBuilder {
@@ -124,7 +56,7 @@ pub struct ModQueryBuilder {
 impl Default for ModQueryBuilder {
   fn default() -> Self {
     Self {
-      game_id: CURSE_MINECRAFT_ID,
+      game_id: crate::CURSE_MINECRAFT_ID,
       categories: Default::default(),
       game_versions: Default::default(),
       search_filter: Default::default(),
