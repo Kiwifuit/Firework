@@ -18,8 +18,8 @@ anyhow.workspace = true
 log = { workspace = true, features = ["serde"] }
 tokio = { workspace = true, features = ["macros", "net", "rt-multi-thread"] }
 
-axum = "0.7.7"
 owo-colors = "4.1.0"
+axum = { version = "0.7.7", features = ["ws"] }
 chrono = { version = "0.4.38", default-features = false, features = [
   "std",
   "clock",
