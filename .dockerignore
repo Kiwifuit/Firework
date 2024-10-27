@@ -1,0 +1,7 @@
+**/.*
+.*
+Dockerfile
+
+target/
+**/samples/
+**/.env
