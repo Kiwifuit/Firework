@@ -402,7 +402,6 @@ dependencies = [
  "fern_colored",
  "hangar",
  "http",
- "lazy_static",
  "log",
  "modparser",
  "modrinth",
