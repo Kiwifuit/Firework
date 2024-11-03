@@ -1,14 +1,7 @@
 import { Title } from "@solidjs/meta";
 import { FaSolidPlus } from "solid-icons/fa";
-import {
-  createEffect,
-  createResource,
-  createSignal,
-  For,
-  Match,
-  Show,
-  Switch,
-} from "solid-js";
+import { createSignal, For, onMount } from "solid-js";
+import ServerListItem from "~/components/ServerListItem";
 
 const API_ENDPOINT = "http://localhost:3030";
 type ServerEntry = {
@@ -25,13 +18,14 @@ type ServerEntry = {
 };
 
 export default function Home() {
-  // const [isOpen, setOpen] = createSignal(false);
   const [serverList, setServerLists] = createSignal(new Array(5));
-  const [servers] = createResource(serverList, fetch_servers);
 
-  createEffect(() => {
-    console.log(serverList());
-  }, servers());
+  onMount(async () => {
+    const response = await fetch(`${API_ENDPOINT}/servers`);
+    const json = await response.json();
+
+    setServerLists(json);
+  });
 
   return (
     <main class="mt-32 grid w-screen place-items-center">
@@ -46,23 +40,19 @@ export default function Home() {
             <FaSolidPlus class="m-auto" />
           </a>
         </div>
-        <Show when={servers.loading}>
-          <div>
-            <p>Loading...</p>
-          </div>
-        </Show>
-        <Switch>
-          <Match when={servers.error}>
-            <div>
-              <p>An error occurred while loading servers: "{servers.error}"</p>
-            </div>
-          </Match>
-          <Match when={serverList()}>
-            <For each={serverList()}>
-              {(data) => <p>{JSON.stringify(data)}</p>}
-            </For>{" "}
-          </Match>
-        </Switch>
+        <For each={serverList()}>
+          {(data) => (
+            <ServerListItem
+              id={data.id}
+              online={data.online}
+              display_name={data.display_name}
+              description={data.description}
+              players={data.players}
+              modpack={data.modpack}
+              software={data.software}
+            />
+          )}
+        </For>
 
         {/* <ServerListItem
           id="server-1"
@@ -112,10 +102,4 @@ export default function Home() {
       </div>
     </main>
   );
-}
-
-async function fetch_servers() {
-  const response = await fetch(`${API_ENDPOINT}/servers`);
-
-  return response.json();
 }

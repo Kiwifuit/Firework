@@ -42,7 +42,9 @@ async fn main() -> anyhow::Result<()> {
     .route("/servers", get(routes::get_servers))
     .layer(cors);
 
-  let server = TcpListener::bind(&ip_addr).await.unwrap();
+  let server = TcpListener::bind(&ip_addr)
+    .await
+    .context(format!("while binding to {:?}", ip_addr))?;
 
   info!("Listening on {}", ip_addr.green());
   axum::serve(server, app)
