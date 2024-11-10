@@ -33,7 +33,7 @@ export default function Home() {
             <FaSolidPlus class="m-auto" />
           </a>
         </div>
-        <For each={servers()} fallback={<p>Fetching server list...</p>}>
+        <For each={servers()} fallback={<NoServerFallback />}>
           {(data) => (
             <ServerListItem
               id={data.id}
@@ -59,4 +59,15 @@ async function fetchServers(): Promise<Server[]> {
   }
 
   return await resp.json();
+}
+
+function NoServerFallback() {
+  return (
+    <div class="grid items-center justify-center py-32">
+      <p class="italic">
+        No servers listed. Create a server by pressing the{" "}
+        <span class="font-mono not-italic">+</span> button
+      </p>
+    </div>
+  );
 }
