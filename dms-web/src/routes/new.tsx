@@ -29,7 +29,7 @@ export default function NewServer() {
       server_version: selectedServerVersion(),
     };
 
-    let resp = await fetch("http://localhost:3030/servers/new", {
+    let resp = await fetch("http://localhost:3030/servers", {
       method: "POST",
       body: JSON.stringify(server),
       headers: {
