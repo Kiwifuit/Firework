@@ -19,6 +19,19 @@
   }
 }
 
+@layer components {
+  textarea,
+  input[type="text"],
+  select,
+  option {
+    @apply font-sans dark:bg-dark-bg dark:text-light-bg;
+  }
+
+  select {
+    @apply grow;
+  }
+}
+
 footer li:not(:last-child)::after {
   content: "●";
   margin-left: 0.5rem;

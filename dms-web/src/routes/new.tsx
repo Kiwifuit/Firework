@@ -85,7 +85,6 @@ export default function NewServer() {
               id="software"
               value={serverType()}
               onChange={(e) => setServerType(e.currentTarget.value)}
-              class="grow"
             >
               <option />
               <For each={supportedServers}>
@@ -106,7 +105,6 @@ export default function NewServer() {
               disabled={serverType() === "" || serverVersions().length <= 0}
               value={selectedServerVersion()}
               onChange={(e) => setSelectedServerVersion(e.target.value)}
-              class="grow"
             >
               <option>Latest</option>
               <For each={serverVersions()}>
@@ -122,7 +120,10 @@ export default function NewServer() {
             </select>
           </div>
 
-          <button type="submit" class="rounded bg-server-online">
+          <button
+            type="submit"
+            class="rounded bg-light-dashboard-button px-3 dark:bg-dark-dashboard-button"
+          >
             Create Server
           </button>
         </form>

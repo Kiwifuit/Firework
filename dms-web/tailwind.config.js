@@ -36,14 +36,14 @@ export default {
       // Dashboard: Logs & Console
       "dark-dashboard-title": "#252525",
       "dark-dashboard-body": "#303030",
-      "dark-dashboard-button": "#353535",
-      "dark-dashboard-text": "#404040",
+      "dark-dashboard-button": "#404040",
+      "dark-dashboard-text": "#505050",
       "dark-placeholder-text": "#cacaca",
 
       "light-dashboard-title": "#a0a0a0",
       "light-dashboard-body": "#909090",
-      "light-dashboard-button": "#858585",
-      "light-dashboard-text": "#757575",
+      "light-dashboard-button": "#808080",
+      "light-dashboard-text": "#707070",
       "light-placeholder-text": "#3c3c3c"
     },
   },
