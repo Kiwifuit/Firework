@@ -1,9 +1,9 @@
 use std::env::var;
 
 use anyhow::Context;
-use axum::routing::get;
+use axum::routing::{get, post};
 use axum::Router;
-use http::{HeaderValue, Method};
+use http::{HeaderName, HeaderValue, Method};
 use log::info;
 use owo_colors::OwoColorize;
 use tokio::net::TcpListener;
@@ -36,10 +36,12 @@ async fn main() -> anyhow::Result<()> {
 
   let cors = CorsLayer::new()
     .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
-    .allow_methods(vec![Method::GET, Method::POST]);
+    .allow_methods(vec![Method::GET, Method::POST])
+    .allow_headers(vec![HeaderName::from_static("content-type")]);
 
   let app = Router::new()
     .route("/servers", get(routes::get_servers))
+    .route("/servers/new", post(routes::new_server))
     .layer(cors);
 
   let server = TcpListener::bind(&ip_addr)

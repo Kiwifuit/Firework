@@ -20,22 +20,28 @@ export default function NewServer() {
   ];
 
   // Server creator
-  const createNewServer = (e: Event) => {
+  const createNewServer = async (e: Event) => {
     e.preventDefault();
-
-    console.log({
+    const server = {
       name: serverName(),
       description: serverDescription(),
-      type: serverType(),
-      versions: {
-        software: selectedServerVersion(),
-        game: null,
+      server: serverType(),
+      server_version: selectedServerVersion(),
+    };
+
+    let resp = await fetch("http://localhost:3030/servers/new", {
+      method: "POST",
+      body: JSON.stringify(server),
+      headers: {
+        "Content-Type": "application/json",
       },
     });
 
-    setTimeout(() => {
-      window.location.href = "/";
-    }, 10_000);
+    if (resp.ok) {
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 10_000);
+    }
   };
 
   // Server versions updater
