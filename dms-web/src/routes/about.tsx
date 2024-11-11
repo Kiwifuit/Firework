@@ -1,6 +1,6 @@
 import { Title } from "@solidjs/meta";
 
-export default async function Test() {
+export default function Test() {
   return (
     <main>
       <Title>This should be visible if the component is rendered</Title>

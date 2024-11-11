@@ -1,23 +1,14 @@
-import { For, createEffect, createSignal } from "solid-js";
+import { For, createResource, createSignal } from "solid-js";
 
 export default function NewServer() {
   // Fields
   const [serverName, setServerName] = createSignal("");
   const [serverDescription, setServerDescription] = createSignal("");
   const [serverType, setServerType] = createSignal("");
-  const [serverVersions, setServerVersions] = createSignal<string[]>([]);
+  const [serverVersions] = createResource(serverType, fetchVersions);
+  const [supportedServers] = createResource(fetchLoaders);
   const [selectedServerVersion, setSelectedServerVersion] =
     createSignal<string>("");
-
-  // Supported Servers
-  const supportedServers = [
-    "Forge",
-    "Neoforge",
-    "Arclight",
-    "Fabric",
-    "Quilt",
-    "Glowstone",
-  ];
 
   // Server creator
   const createNewServer = async (e: Event) => {
@@ -43,22 +34,6 @@ export default function NewServer() {
       }, 10_000);
     }
   };
-
-  // Server versions updater
-  createEffect(() => {
-    const server_type = serverType();
-
-    // Clear the versions array before grabbing the versions
-    setServerVersions([]);
-
-    if (server_type) {
-      for (let i = 0; i <= 6; i++) {
-        setServerVersions((versions) => {
-          return [...versions, `1.20.${i}-${server_type}`];
-        });
-      }
-    }
-  });
 
   return (
     <div class="flex flex-grow items-center justify-center">
@@ -93,7 +68,7 @@ export default function NewServer() {
               onChange={(e) => setServerType(e.currentTarget.value)}
             >
               <option />
-              <For each={supportedServers}>
+              <For each={supportedServers()}>
                 {(software) => (
                   <option value={software.toLowerCase()} class="font-sans">
                     {software}
@@ -108,7 +83,9 @@ export default function NewServer() {
             <select
               name="software-version"
               id="software-version"
-              disabled={serverType() === "" || serverVersions().length <= 0}
+              disabled={
+                serverType() === "" || (serverVersions()?.length ?? 0) <= 0
+              }
               value={selectedServerVersion()}
               onChange={(e) => setSelectedServerVersion(e.target.value)}
             >
@@ -136,4 +113,14 @@ export default function NewServer() {
       </div>
     </div>
   );
+}
+
+async function fetchLoaders(): Promise<string[]> {
+  let resp = await fetch("http://localhost:3030/loaders");
+  return await resp.json();
+}
+
+async function fetchVersions(loader: string): Promise<string[]> {
+  let resp = await fetch(`http://localhost:3030/loaders/${loader}/versions`);
+  return await resp.json();
 }
