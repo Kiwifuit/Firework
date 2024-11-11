@@ -13,5 +13,7 @@
     "tamasfe.even-better-toml",
     "fill-labs.dependi",
     "streetsidesoftware.code-spell-checker",
+    "gruntfuggly.todo-tree",
+    "eamodio.gitlens"
   ]
 }
