@@ -409,6 +409,7 @@ dependencies = [
  "owo-colors",
  "packparse",
  "serde",
+ "serde_json",
  "temp-dir",
  "thiserror",
  "tokio",

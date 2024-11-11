@@ -44,7 +44,6 @@ fn main() -> anyhow::Result<()> {
 
   // Feature listing
   detect_feature!("dms");
-  detect_feature!("server-utils");
   detect_feature!("all-providers");
   detect_feature!("all-parsers");
 

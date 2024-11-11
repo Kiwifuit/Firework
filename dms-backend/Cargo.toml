@@ -13,7 +13,7 @@ mar = { path = "../mar" }
 
 temp-dir.workspace = true
 serde.workspace = true
-# serde_json.workspace = true
+serde_json.workspace = true
 thiserror.workspace = true
 anyhow.workspace = true
 log = { workspace = true, features = ["serde"] }
