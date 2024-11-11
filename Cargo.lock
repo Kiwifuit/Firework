@@ -403,6 +403,7 @@ dependencies = [
  "hangar",
  "http",
  "log",
+ "mar",
  "modparser",
  "modrinth",
  "owo-colors",

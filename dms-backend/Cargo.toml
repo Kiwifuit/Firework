@@ -4,13 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-denji = { path = "../denji", optional = true }
 packparse = { path = "../packparse", optional = true }
 modparser = { path = "../modparser", optional = true }
 modrinth = { path = "../modrinth", optional = true }
 hangar = { path = "../hangar", optional = true }
-temp-dir = { workspace = true, optional = true }
+denji = { path = "../denji" }
+mar = { path = "../mar" }
 
+temp-dir.workspace = true
 serde.workspace = true
 # serde_json.workspace = true
 thiserror.workspace = true
@@ -47,6 +48,4 @@ all-parsers = ["parser-modpack", "parser-modjar"]
 parser-modpack = ["dep:packparse"]
 parser-modjar = ["dep:modparser"]
 
-server-utils = ["dep:denji", "dep:temp-dir"]
-
-dms = ["all-providers", "all-parsers", "server-utils"]
+dms = ["all-providers", "all-parsers"]
