@@ -3,6 +3,7 @@ use crate::types::*;
 use log::debug;
 use quick_xml::de::from_str;
 use reqwest::get;
+use serde::Serialize;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -18,6 +19,15 @@ pub enum RepositoryError {
 
   #[error("xml deserialization error: {0}")]
   XmlParse(#[from] quick_xml::DeError),
+}
+
+impl Serialize for RepositoryError {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: serde::Serializer,
+  {
+    serializer.serialize_str(&self.to_string())
+  }
 }
 
 pub async fn get_versions(

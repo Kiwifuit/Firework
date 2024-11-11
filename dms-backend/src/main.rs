@@ -43,6 +43,7 @@ async fn main() -> anyhow::Result<()> {
     .route("/servers", get(routes::get_servers))
     .route("/servers", post(routes::new_server))
     .route("/loaders", get(routes::get_loaders))
+    .route("/loaders/:loader/versions", get(routes::get_loader_version))
     .layer(cors);
 
   let server = TcpListener::bind(&ip_addr)
