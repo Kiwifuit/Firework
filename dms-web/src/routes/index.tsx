@@ -6,7 +6,7 @@ import ServerListItem from "~/components/ServerListItem";
 const API_ENDPOINT = "http://localhost:3030";
 type Server = {
   id: string;
-  online: boolean;
+  status: string;
   display_name: string;
   description: string;
   players: {
@@ -37,7 +37,7 @@ export default function Home() {
           {(data) => (
             <ServerListItem
               id={data.id}
-              online={data.online}
+              status={data.status}
               display_name={data.display_name}
               description={data.description}
               players={data.players}

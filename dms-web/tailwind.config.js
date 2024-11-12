@@ -29,9 +29,10 @@ export default {
       "dark-dashboard-hover":"#404040",
       "light-dashboard-hover":"#dddddd",
 
-      // Server Online/Offline indicator
+      // Server Status indicator
       "server-offline": "#d62f2f",
       "server-online": "#2ed154",
+      "server-building": "#ffbb00",
 
       // Dashboard: Logs & Console
       "dark-dashboard-title": "#252525",

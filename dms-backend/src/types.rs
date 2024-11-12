@@ -1,9 +1,18 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Default)]
+#[serde(rename_all = "lowercase")]
+pub enum ServerStatus {
+  Online,
+  #[default]
+  Offline,
+  Building,
+}
+
+#[derive(Debug, Serialize, Default)]
 pub struct MinecraftServer {
   id: String,
-  online: bool,
+  status: ServerStatus,
   display_name: String,
   description: String,
   players: MinecraftServerPlayers,
