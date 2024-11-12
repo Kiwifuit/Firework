@@ -75,12 +75,12 @@ fn get_loader_artifact(loader_type: &str) -> Option<MavenArtifact> {
   match loader_type {
     "forge" => Some("maven.minecraftforge.net:net.minecraftforge:forge:"),
     "fabric" => Some("maven.fabricmc.net:net.fabricmc:fabric-installer:"),
-    "quilt" => Some("maven.quiltmc.org/repository/release:org.quiltm:quilt-installer:"),
+    "quilt" => Some("maven.quiltmc.org/repository/release:org.quiltmc:quilt-installer:"),
     "neoforge" => Some("maven.neoforged.net/releases:net.neoforged:neoforge:"),
     "glowstone" => {
       Some("repo.glowstone.net/content/repositories/snapshots:net.glowstone:glowstone:")
     }
-    "arclight" => Some("maven.izzel.io/releases/:io.izzel.arclight:arclight_forge:"),
+    "arclight" => Some("maven.izzel.io/releases/:io.izzel.arclight:arclight-forge:"),
     _ => None,
   }
   .and_then(|a| MavenArtifact::from_str(a).ok())

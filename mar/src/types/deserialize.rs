@@ -16,7 +16,7 @@ pub struct MavenArtifactVersions {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MavenArtifactVersionVersioning {
-  release: Arc<str>,
+  release: Option<Arc<str>>,
   latest: Arc<str>,
   last_updated: u64,
   versions: MAVersioningVersions,
@@ -24,8 +24,8 @@ pub struct MavenArtifactVersionVersioning {
 
 #[cfg(feature = "types")]
 impl MavenArtifactVersionVersioning {
-  pub fn release(&self) -> &str {
-    &self.release
+  pub fn release(&self) -> Option<&str> {
+    self.release.as_deref()
   }
 
   pub fn latest(&self) -> &str {
