@@ -11,6 +11,7 @@ use tower_http::cors::CorsLayer;
 
 mod logger;
 mod routes;
+mod state;
 mod types;
 mod ws;
 
