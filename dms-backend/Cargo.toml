@@ -11,7 +11,6 @@ hangar = { path = "../hangar", optional = true }
 denji = { path = "../denji" }
 mar = { path = "../mar" }
 
-temp-dir.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
@@ -28,6 +27,7 @@ chrono = { version = "0.4.38", default-features = false, features = [
 fern_colored = { version = "0.6.1", features = ["colored"] }
 tower-http = { version = "0.6.1", features = ["cors"] }
 http = "1.1.0"
+directories = "5.0.1"
 
 [build-dependencies]
 anyhow.workspace = true
