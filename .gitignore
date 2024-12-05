@@ -1,3 +1,5 @@
 target/
 **/samples/
 **/.env
+
+dms-web/app.config.*.js

@@ -7,21 +7,19 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug unit tests in library 'modparser'",
+      "name": "Launch & Debug Backend",
       "cargo": {
         "args": [
-          "test",
-          "--no-run",
-          "--lib",
-          "--package=modparser"
+          "build",
+          "--bin=dms-backend"
         ],
         "filter": {
-          "name": "modparser",
-          "kind": "lib"
+          "kind": "bin"
         }
       },
+      "program": "${workspaceFolder}/target/debug/dms-backend",
       "args": [],
       "cwd": "${workspaceFolder}"
-    }
+    },
   ]
 }
