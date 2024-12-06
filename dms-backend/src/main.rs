@@ -53,8 +53,8 @@ async fn main() -> anyhow::Result<()> {
   let app = Router::new()
     .route("/servers", get(routes::get_servers))
     .route("/servers", post(routes::new_server))
-    // .route("/loaders", get(routes::get_loaders))
-    // .route("/loaders/:loader/versions", get(routes::get_loader_version))
+    .route("/loaders", get(routes::get_loaders))
+    .route("/loaders/:loader/versions", get(routes::get_loader_version))
     // .layer(cors)
     .with_state(server_state);
 
