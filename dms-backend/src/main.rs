@@ -1,8 +1,11 @@
 use std::env::var;
+use std::path::PathBuf;
+use std::sync::Arc;
 
 use anyhow::Context;
 use axum::routing::{get, post};
 use axum::Router;
+use directories::ProjectDirs;
 use http::{HeaderName, HeaderValue, Method};
 use log::info;
 use owo_colors::OwoColorize;
@@ -33,6 +36,13 @@ async fn main() -> anyhow::Result<()> {
   logger::init().context("while initializing logger")?;
 
   info!("Good morning!");
+  let server_state = Arc::new(state::DMSState::new(4).context("while initializing server")?);
+
+  //   let appdir = ProjectDirs::from("xz", "tar", "dms").unwrap();
+  //   let state = Arc::new(ServerState {
+  //     root_dir: appdir.data_dir().to_path_buf(),
+  //   });
+
   let ip_addr = var("DMS_HOST").unwrap_or(String::from("localhost:3030"));
 
   let cors = CorsLayer::new()
@@ -43,9 +53,10 @@ async fn main() -> anyhow::Result<()> {
   let app = Router::new()
     .route("/servers", get(routes::get_servers))
     .route("/servers", post(routes::new_server))
-    .route("/loaders", get(routes::get_loaders))
-    .route("/loaders/:loader/versions", get(routes::get_loader_version))
-    .layer(cors);
+    // .route("/loaders", get(routes::get_loaders))
+    // .route("/loaders/:loader/versions", get(routes::get_loader_version))
+    // .layer(cors)
+    .with_state(server_state);
 
   let server = TcpListener::bind(&ip_addr)
     .await

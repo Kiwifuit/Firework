@@ -11,6 +11,7 @@ use std::fs::{create_dir, File};
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::path::Path;
 use std::process::{Command, Stdio};
+use std::str::FromStr;
 use std::sync::mpsc::Sender;
 use std::sync::Arc;
 use thiserror::Error;
@@ -175,16 +176,30 @@ pub trait ServerSoftwareMeta: Display + Into<MavenArtifact> + Copy {
   fn run_sh_content(&self) -> Vec<String>;
 }
 
-impl<'a> From<Cow<'a, str>> for ServerSoftware {
-  #[expect(clippy::wildcard_in_or_patterns)]
-  fn from(value: Cow<'a, str>) -> Self {
-    match value.borrow() {
+impl FromStr for ServerSoftware {
+  type Err = ();
+
+  #[expect(
+    clippy::wildcard_in_or_patterns,
+    reason = "We are trying to provide a default variant"
+  )]
+  // TODO: This could be a bit dangerous
+  //       Probably should return an error in...
+  fn from_str(s: &str) -> Result<Self, Self::Err> {
+    Ok(match s {
       "forge" => Self::Forge,
       "neoforge" => Self::Neoforge,
       "fabric" => Self::Fabric,
       "quilt" => Self::Quilt,
-      "glowstone" | _ => Self::Glowstone,
-    }
+      "glowstone" | _ => Self::Glowstone, // ...here
+    })
+  }
+}
+
+impl<'a> From<Cow<'a, str>> for ServerSoftware {
+  fn from(value: Cow<'a, str>) -> Self {
+    let a: &str = value.borrow();
+    a.parse().unwrap()
   }
 }
 

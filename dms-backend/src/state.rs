@@ -2,15 +2,18 @@ use log::debug;
 use log::info;
 use log::warn;
 use thiserror::Error;
+use tokio::sync::mpsc::Receiver;
 
 use crate::types::Worker;
-use std::fs::OpenOptions;
-use std::io::BufReader;
-use std::path::Path;
+use crate::types::WorkerMessage;
+use crate::types::WorkerResponse;
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::time::Duration;
 
-use std::sync::mpsc;
+use tokio::sync::mpsc;
+
+const WORKER_TIMEOUT: Duration = Duration::from_micros(20);
 
 #[derive(Debug, Error)]
 pub enum StateError {
@@ -23,45 +26,58 @@ pub enum StateError {
 
 #[derive(Clone)]
 pub struct DMSState {
-  // pub dispatcher: tokio::sync::broadcast::Sender<ServerBuildParams>,
-  // pub available_servers: Arc<Mutex<HashMap<String, MinecraftServerManifest>>>,
-  //   data_dir: PathBuf,
   workers: Vec<Worker>,
+  worker_channel: Arc<Receiver<WorkerMessage>>,
+  data_dir: PathBuf,
 }
 
 impl DMSState {
   pub fn new(worker_threads: usize) -> Result<Self, StateError> {
     let data_dir = PathBuf::from("./target/servers/");
     let mut workers = vec![];
+    let (server_tx, server_rx) = mpsc::channel::<crate::types::WorkerMessage>(100);
 
     for task_id in 0..worker_threads {
-      let (task_tx, task_rx) = mpsc::channel::<crate::types::WorkerJob>();
-      let (server_tx, server_rx) = mpsc::channel::<crate::types::WorkerJob>();
+      let (task_tx, mut task_rx) = mpsc::channel::<crate::types::WorkerMessage>(100);
+      let server_tx = server_tx.clone();
+      let worker_tx = server_tx.clone();
 
       tokio::task::spawn(async move {
-        info!("Spawned task #{}", task_id);
+        info!("Spawned worker #{}", task_id);
 
-        while let Ok(msg) = task_rx.recv() {
+        while let Some(msg) = task_rx.recv().await {
           info!("Worker {} got message: {:?}", task_id, msg);
-
-          server_tx.send(msg);
+          //   server_tx.send(msg).await;
+          server_tx
+            .send(WorkerMessage::Response(WorkerResponse::Received(task_id)))
+            .await;
         }
       });
 
       workers.push(Worker {
         id: task_id,
         tx: task_tx,
-        rx: Arc::new(server_rx),
+        rx: worker_tx,
       });
     }
 
-    Ok(Self { workers })
+    Ok(Self {
+      data_dir,
+      workers,
+      worker_channel: Arc::new(server_rx),
+    })
+  }
 
-    // Ok(Self {
-    //   data_dir,
-    //   available_servers: Arc::new(Mutex::new(manifests)),
-    //   //   dispatcher,
-    // })
+  pub async fn dispatch_job(&self, job: WorkerMessage) -> Option<usize> {
+    for worker in &self.workers {
+      let job = job.clone();
+
+      if worker.tx.send_timeout(job, WORKER_TIMEOUT).await.is_ok() {
+        return Some(worker.id);
+      }
+    }
+
+    None
   }
 }
 
