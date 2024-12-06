@@ -1,11 +1,9 @@
 use std::env::var;
-use std::path::PathBuf;
 use std::sync::Arc;
 
 use anyhow::Context;
 use axum::routing::{get, post};
 use axum::Router;
-use directories::ProjectDirs;
 use http::{HeaderName, HeaderValue, Method};
 use log::info;
 use owo_colors::OwoColorize;

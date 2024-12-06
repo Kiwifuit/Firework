@@ -32,7 +32,6 @@ impl IntoResponse for VersionError {
   }
 }
 
-#[cfg_attr(debug_assertions, axum::debug_handler)]
 pub async fn get_loaders() -> Json<Vec<String>> {
   Json(
     [
