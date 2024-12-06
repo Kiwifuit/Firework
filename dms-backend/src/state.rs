@@ -3,7 +3,7 @@ use tokio::sync::mpsc::Receiver;
 
 use crate::types::Worker;
 use crate::types::WorkerMessage;
-use crate::types::WorkerResponse;
+use crate::worker::create_worker_thread;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
@@ -35,27 +35,9 @@ impl DMSState {
     let (server_tx, server_rx) = mpsc::channel::<crate::types::WorkerMessage>(100);
 
     for task_id in 0..worker_threads {
-      let (task_tx, mut task_rx) = mpsc::channel::<crate::types::WorkerMessage>(100);
       let server_tx = server_tx.clone();
-      let worker_tx = server_tx.clone();
 
-      tokio::task::spawn(async move {
-        info!("Spawned worker #{}", task_id);
-
-        while let Some(msg) = task_rx.recv().await {
-          info!("Worker {} got message: {:?}", task_id, msg);
-          //   server_tx.send(msg).await;
-          server_tx
-            .send(WorkerMessage::Response(WorkerResponse::Received(task_id)))
-            .await;
-        }
-      });
-
-      workers.push(Worker {
-        id: task_id,
-        tx: task_tx,
-        rx: worker_tx,
-      });
+      workers.push(create_worker_thread(task_id, server_tx));
     }
 
     Ok(Self {

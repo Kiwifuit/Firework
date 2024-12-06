@@ -14,6 +14,7 @@ mod logger;
 mod routes;
 mod state;
 mod types;
+mod worker;
 mod ws;
 
 // Route overview:
