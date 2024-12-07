@@ -5,138 +5,138 @@ use std::{fmt::Debug, rc::Rc};
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HangarProjects {
-    pub pagination: HangarProjectsPagination,
-    pub result: Rc<[HangarProject]>,
+  pub pagination: HangarProjectsPagination,
+  pub result: Rc<[HangarProject]>,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HangarProjectsPagination {
-    pub limit: u8,
-    pub offset: u8,
-    pub count: u16,
+  pub limit: u8,
+  pub offset: u8,
+  pub count: u16,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HangarProject {
-    pub created_at: DateTime,
-    pub name: Rc<str>,
-    pub namespace: HangarProjectNamespace,
-    pub last_updated: DateTime,
-    pub avatar_url: Rc<str>,
-    pub description: Rc<str>,
-    pub category: HangarProjectCategory,
-    pub visibility: HangarVisibility,
-    pub settings: HangarProjectSettings,
+  pub created_at: DateTime,
+  pub name: Rc<str>,
+  pub namespace: HangarProjectNamespace,
+  pub last_updated: DateTime,
+  pub avatar_url: Rc<str>,
+  pub description: Rc<str>,
+  pub category: HangarProjectCategory,
+  pub visibility: HangarVisibility,
+  pub settings: HangarProjectSettings,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HangarProjectSettings {
-    pub links: Option<Rc<[HangarProjectLinks]>>,
-    pub tags: HangarTags,
-    pub license: HangarProjectLicense,
-    pub keywords: Vec<Rc<str>>,
+  pub links: Option<Rc<[HangarProjectLinks]>>,
+  pub tags: HangarTags,
+  pub license: HangarProjectLicense,
+  pub keywords: Vec<Rc<str>>,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HangarProjectNamespace {
-    pub owner: Rc<str>,
-    pub slug: Rc<str>,
+  pub owner: Rc<str>,
+  pub slug: Rc<str>,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HangarProjectLinks {
-    #[serde(deserialize_with = "deserialize_links")]
-    pub links: Rc<[HangarProjectLink]>,
+  #[serde(deserialize_with = "deserialize_links")]
+  pub links: Rc<[HangarProjectLink]>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct HangarProjectLink {
-    pub id: u8,
-    pub name: Rc<str>,
-    #[serde(deserialize_with = "deserialize_null_default")]
-    pub url: Rc<str>,
+  pub id: u8,
+  pub name: Rc<str>,
+  #[serde(deserialize_with = "deserialize_null_default")]
+  pub url: Rc<str>,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum HangarProjectCategory {
-    AdminTools,
-    Chat,
-    DevTools,
-    Economy,
-    Gameplay,
-    Games,
-    Protection,
-    RolePlaying,
-    WorldManagement,
-    Misc,
-    Undefined,
+  AdminTools,
+  Chat,
+  DevTools,
+  Economy,
+  Gameplay,
+  Games,
+  Protection,
+  RolePlaying,
+  WorldManagement,
+  Misc,
+  Undefined,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HangarProjectLicense {
-    pub name: Option<Rc<str>>,
-    pub url: Option<Rc<str>>,
+  pub name: Option<Rc<str>>,
+  pub url: Option<Rc<str>>,
 
-    #[serde(rename = "type")]
-    pub license_type: Rc<str>,
+  #[serde(rename = "type")]
+  pub license_type: Rc<str>,
 }
 
 fn deserialize_links<'de, D>(deserializer: D) -> Result<Rc<[HangarProjectLink]>, D::Error>
 where
-    D: serde::Deserializer<'de>,
+  D: serde::Deserializer<'de>,
 {
-    struct LinksVisitor;
+  struct LinksVisitor;
 
-    impl<'de> serde::de::Visitor<'de> for LinksVisitor {
-        type Value = Rc<[HangarProjectLink]>;
+  impl<'de> serde::de::Visitor<'de> for LinksVisitor {
+    type Value = Rc<[HangarProjectLink]>;
 
-        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-            formatter.write_str("a list of HangarProjectLinks")
-        }
-
-        fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
-        where
-            A: serde::de::SeqAccess<'de>,
-        {
-            let mut links = Vec::new();
-
-            while let Some(link) = seq.next_element::<HangarProjectLink>()? {
-                if !link.url.is_empty() {
-                    links.push(link);
-                }
-            }
-
-            Ok(Rc::from_iter(links.into_boxed_slice()))
-        }
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+      formatter.write_str("a list of HangarProjectLinks")
     }
 
-    deserializer.deserialize_seq(LinksVisitor)
+    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+    where
+      A: serde::de::SeqAccess<'de>,
+    {
+      let mut links = Vec::new();
+
+      while let Some(link) = seq.next_element::<HangarProjectLink>()? {
+        if !link.url.is_empty() {
+          links.push(link);
+        }
+      }
+
+      Ok(Rc::from_iter(links.into_boxed_slice()))
+    }
+  }
+
+  deserializer.deserialize_seq(LinksVisitor)
 }
 
 fn deserialize_null_default<'de, D, T>(deserializer: D) -> Result<T, D::Error>
 where
-    T: Default + Deserialize<'de>,
-    D: serde::Deserializer<'de>,
+  T: Default + Deserialize<'de>,
+  D: serde::Deserializer<'de>,
 {
-    let opt = Option::deserialize(deserializer)?;
-    Ok(opt.unwrap_or_default())
+  let opt = Option::deserialize(deserializer)?;
+  Ok(opt.unwrap_or_default())
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use serde_json::from_str;
+  use super::*;
+  use serde_json::from_str;
 
-    #[test]
-    fn one_project() {
-        let raw = r#"
+  #[test]
+  fn one_project() {
+    let raw = r#"
 {
 	"createdAt": "2022-12-22T14:04:48.773082Z",
 	"name": "Maintenance",
@@ -214,15 +214,15 @@ mod tests {
 		}
 	}
 }"#;
-        let project = from_str(raw);
-        assert!(project.is_ok());
+    let project = from_str(raw);
+    assert!(project.is_ok());
 
-        let _project: HangarProject = project.unwrap();
-    }
+    let _project: HangarProject = project.unwrap();
+  }
 
-    #[test]
-    fn many_projects() {
-        let raw = r#"
+  #[test]
+  fn many_projects() {
+    let raw = r#"
 {
   "pagination": {
     "limit": 25,
@@ -2261,10 +2261,10 @@ mod tests {
 }
         "#;
 
-        let projects = from_str(raw);
+    let projects = from_str(raw);
 
-        assert!(projects.is_ok());
+    assert!(projects.is_ok());
 
-        let _projects: HangarProjects = projects.unwrap();
-    }
+    let _projects: HangarProjects = projects.unwrap();
+  }
 }

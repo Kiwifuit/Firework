@@ -8,102 +8,102 @@ mod traits;
 
 #[derive(Debug, Deserialize)]
 pub struct HangarVersions {
-    pub pagination: HangarVersionsPagination,
-    pub result: Vec<HangarVersion>,
+  pub pagination: HangarVersionsPagination,
+  pub result: Vec<HangarVersion>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct HangarVersionsPagination {
-    pub limit: u8,
-    pub offset: u8,
-    pub count: u16,
+  pub limit: u8,
+  pub offset: u8,
+  pub count: u16,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HangarVersion {
-    pub created_at: DateTime,
-    pub name: Rc<str>,
-    pub visibility: HangarVisibility,
-    pub description: Rc<str>,
-    pub author: Rc<str>,
-    #[serde(deserialize_with = "traits::deserialize_kv")]
-    pub downloads: Vec<HangarVersionDownload>,
-    #[serde(deserialize_with = "traits::deserialize_kv")]
-    pub plugin_dependencies: Vec<HangarVersionPluginDependencies>,
-    #[serde(deserialize_with = "traits::deserialize_kv")]
-    pub platform_dependencies: Vec<HangarVersionPlatformDependencies>,
+  pub created_at: DateTime,
+  pub name: Rc<str>,
+  pub visibility: HangarVisibility,
+  pub description: Rc<str>,
+  pub author: Rc<str>,
+  #[serde(deserialize_with = "traits::deserialize_kv")]
+  pub downloads: Vec<HangarVersionDownload>,
+  #[serde(deserialize_with = "traits::deserialize_kv")]
+  pub plugin_dependencies: Vec<HangarVersionPluginDependencies>,
+  #[serde(deserialize_with = "traits::deserialize_kv")]
+  pub platform_dependencies: Vec<HangarVersionPlatformDependencies>,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HangarVersionDownload {
-    pub platform: HangarPlatform,
+  pub platform: HangarPlatform,
 
-    #[serde(flatten)]
-    pub details: HPDownloadDetails,
+  #[serde(flatten)]
+  pub details: HPDownloadDetails,
 }
 
 impl traits::KeyValueType for HangarVersionDownload {
-    type Key = HangarPlatform;
-    type Value = HPDownloadDetails;
+  type Key = HangarPlatform;
+  type Value = HPDownloadDetails;
 
-    fn init(key: Self::Key, value: Self::Value) -> Self {
-        Self {
-            platform: key,
-            details: value,
-        }
+  fn init(key: Self::Key, value: Self::Value) -> Self {
+    Self {
+      platform: key,
+      details: value,
     }
+  }
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HangarVersionPluginDependencies {
-    pub name: Rc<str>,
+  pub name: Rc<str>,
 
-    #[serde(flatten)]
-    pub details: Rc<[HPPluginDependencyDetails]>,
+  #[serde(flatten)]
+  pub details: Rc<[HPPluginDependencyDetails]>,
 }
 
 impl traits::KeyValueType for HangarVersionPluginDependencies {
-    type Key = Rc<str>;
-    type Value = Rc<[HPPluginDependencyDetails]>;
+  type Key = Rc<str>;
+  type Value = Rc<[HPPluginDependencyDetails]>;
 
-    fn init(key: Self::Key, value: Self::Value) -> Self {
-        Self {
-            name: key,
-            details: value,
-        }
+  fn init(key: Self::Key, value: Self::Value) -> Self {
+    Self {
+      name: key,
+      details: value,
     }
+  }
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HangarVersionPlatformDependencies {
-    pub platform: HangarPlatform,
-    pub version: Vec<Rc<str>>,
+  pub platform: HangarPlatform,
+  pub version: Vec<Rc<str>>,
 }
 
 impl traits::KeyValueType for HangarVersionPlatformDependencies {
-    type Key = HangarPlatform;
-    type Value = Vec<Rc<str>>;
+  type Key = HangarPlatform;
+  type Value = Vec<Rc<str>>;
 
-    fn init(key: Self::Key, value: Self::Value) -> Self {
-        Self {
-            platform: key,
-            version: value,
-        }
+  fn init(key: Self::Key, value: Self::Value) -> Self {
+    Self {
+      platform: key,
+      version: value,
     }
+  }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use serde_json::from_str;
+  use super::*;
+  use serde_json::from_str;
 
-    #[test]
-    fn one_version() {
-        let raw = r#"
+  #[test]
+  fn one_version() {
+    let raw = r#"
         {
             "createdAt": "2024-05-17T13:48:41.703391Z",
             "name": "4.2.1",
@@ -240,15 +240,15 @@ mod tests {
             }
         }
         "#;
-        let version = from_str(raw);
+    let version = from_str(raw);
 
-        assert!(version.is_ok());
-        let _version: HangarVersion = version.unwrap();
-    }
+    assert!(version.is_ok());
+    let _version: HangarVersion = version.unwrap();
+  }
 
-    #[test]
-    fn many_versions() {
-        let raw = r#"
+  #[test]
+  fn many_versions() {
+    let raw = r#"
 {
 	"pagination": {
 		"limit": 10,
@@ -844,9 +844,9 @@ mod tests {
 }
         "#;
 
-        let versions = from_str(raw);
+    let versions = from_str(raw);
 
-        assert!(versions.is_ok());
-        let _versions: HangarVersions = versions.unwrap();
-    }
+    assert!(versions.is_ok());
+    let _versions: HangarVersions = versions.unwrap();
+  }
 }

@@ -210,6 +210,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "22ec99545bb0ed0ea7bb9b8e1e9122ea386ff8a48c0922e43f36d45ab09e0e80"
 
 [[package]]
+name = "curseforge"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "dotenv",
+ "env_logger",
+ "log",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
 name = "denji"
 version = "0.1.0"
 dependencies = [
@@ -224,6 +239,12 @@ dependencies = [
  "thiserror",
  "tokio",
 ]
+
+[[package]]
+name = "dotenv"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77c90badedccf4105eca100756a0b1289e191f6fcbdadd3cee1d2f614f97da8f"
 
 [[package]]
 name = "encoding_rs"
@@ -690,7 +711,7 @@ dependencies = [
 
 [[package]]
 name = "modparser"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "log",
  "serde",

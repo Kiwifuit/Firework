@@ -6,14 +6,14 @@ pub use modrinth::ModrinthModpack;
 
 #[derive(PartialEq)]
 pub enum ModpackProvider {
-    Forge,
-    Modrinth,
-    None,
+  Forge,
+  Modrinth,
+  None,
 }
 
 pub trait ModpackProviderMetadata {
-    type Out;
+  type Out;
 
-    fn overrides_dir(&self) -> Self::Out;
-    fn modpack_name(&self) -> Self::Out;
+  fn overrides_dir(&self) -> Self::Out;
+  fn modpack_name(&self) -> Self::Out;
 }

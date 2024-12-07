@@ -2,3 +2,8 @@ target/
 **/samples/
 **/.env
 **/node_modules
+**/app.config*
+**/.output
+**/.vinxi
+
+**/*.so
