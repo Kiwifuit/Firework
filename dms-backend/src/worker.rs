@@ -48,22 +48,10 @@ async fn build_server(params: ServerBuildParams) -> anyhow::Result<()> {
     "Building server {} for {} {}",
     params.name, params.server, params.server_version
   );
-
-  let server_build = denji::MinecraftServer::new(
-    params.server.parse::<denji::ServerSoftware>().unwrap(),
-    &params.server_version,
-    &params.server_version,
-    "target/servers/dummy/",
-  );
   let (tx, rx) = std::sync::mpsc::channel::<String>();
-  let task = tokio::task::spawn(async move {
-    if let Err(e) = server_build.build_server(tx).await {
-      error!("An error occurred while building the server: {:?}", e);
-    }
-  })
-  .await;
 
-  loop {
+  info!("Spawning read thread");
+  std::thread::spawn(move || loop {
     match rx.recv_timeout(std::time::Duration::from_secs(90)) {
       Ok(line) => info!("{}", line),
       Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
@@ -71,9 +59,21 @@ async fn build_server(params: ServerBuildParams) -> anyhow::Result<()> {
       }
       Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => break,
     }
-  }
+  });
 
-  task.expect("expected bla bla bla");
+  let server_build = denji::MinecraftServer::new(
+    params.server.parse::<denji::ServerSoftware>().unwrap(),
+    &params.server_version,
+    &params.server_version,
+    "target/servers/dummy/",
+  );
+  let task = tokio::task::spawn(async move {
+    if let Err(e) = server_build.build_server(tx).await {
+      error!("An error occurred while building the server: {:?}", e);
+    }
+  })
+  .await
+  .expect("expected this task to not return any errors");
 
   Ok(())
 }
