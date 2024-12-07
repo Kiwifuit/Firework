@@ -1,5 +1,5 @@
 use anyhow::Context;
-use log::info;
+use log::{error, info, warn};
 use tokio::sync::mpsc::{channel, Sender};
 
 use crate::types::{ServerBuildParams, Worker, WorkerMessage, WorkerResponse};
@@ -19,7 +19,9 @@ pub fn create_worker_thread(task_id: usize, server_tx: Sender<WorkerMessage>) ->
         .await
         .context("while sending confirmation message")?;
 
-      handle_message(msg).context("while handling message")?;
+      handle_message(msg)
+        .await
+        .context("while handling message")?;
     }
 
     Ok::<usize, anyhow::Error>(task_id)
@@ -32,20 +34,46 @@ pub fn create_worker_thread(task_id: usize, server_tx: Sender<WorkerMessage>) ->
   }
 }
 
-fn handle_message(message: WorkerMessage) -> anyhow::Result<()> {
+async fn handle_message(message: WorkerMessage) -> anyhow::Result<()> {
   match message {
-    WorkerMessage::Build(params) => build_server(params)?,
+    WorkerMessage::Build(params) => build_server(params).await?,
     _ => todo!(),
   }
 
   Ok(())
 }
 
-fn build_server(params: ServerBuildParams) -> anyhow::Result<()> {
+async fn build_server(params: ServerBuildParams) -> anyhow::Result<()> {
   info!(
     "Building server {} for {} {}",
     params.name, params.server, params.server_version
   );
+
+  let server_build = denji::MinecraftServer::new(
+    params.server.parse::<denji::ServerSoftware>().unwrap(),
+    &params.server_version,
+    &params.server_version,
+    "target/servers/dummy/",
+  );
+  let (tx, rx) = std::sync::mpsc::channel::<String>();
+  let task = tokio::task::spawn(async move {
+    if let Err(e) = server_build.build_server(tx).await {
+      error!("An error occurred while building the server: {:?}", e);
+    }
+  })
+  .await;
+
+  loop {
+    match rx.recv_timeout(std::time::Duration::from_secs(90)) {
+      Ok(line) => info!("{}", line),
+      Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
+        error!("Timeout reached while awaiting message");
+      }
+      Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => break,
+    }
+  }
+
+  task.expect("expected bla bla bla");
 
   Ok(())
 }

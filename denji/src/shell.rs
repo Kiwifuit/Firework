@@ -1,6 +1,6 @@
 use anyhow::Context;
 use futures_util::StreamExt;
-use log::{debug, error, info};
+use log::{debug, error, info, warn};
 use mar::types::MavenArtifact;
 use mar::{get_artifact, get_versions};
 use reqwest::get;
@@ -46,6 +46,9 @@ pub enum ServerInstallError {
   Io(#[from] std::io::Error),
   #[error("{0}")]
   Contextual(#[from] anyhow::Error),
+
+  #[error("Installer exited with non-zero code")]
+  Installer,
 }
 
 pub struct MinecraftServer<S, I> {
@@ -65,7 +68,10 @@ impl<I: AsRef<Path>, S: ServerSoftwareMeta> MinecraftServer<S, I> {
     }
   }
 
-  pub async fn build_server(&self, tx: Sender<String>) -> Result<(), ServerInstallError> {
+  pub async fn build_server<T>(&self, tx: Sender<T>) -> Result<(), ServerInstallError>
+  where
+    T: From<String>,
+  {
     info!(
       "installing {} v{} for minecraft {} to {}",
       self.server,
@@ -110,14 +116,17 @@ impl<I: AsRef<Path>, S: ServerSoftwareMeta> MinecraftServer<S, I> {
       let stdout = BufReader::new(installer.stdout.as_mut().unwrap());
 
       for line in stdout.lines() {
-        tx.send(line?)
-          .context("while installing server (tx -> rx)")?;
+        tx.send(T::from(line?)).expect("Expected tx to be sendable");
+        // if let Err(e) = tx.send(T::from(line?)) {
+        //   warn!("While sending line: {}", e);
+        // }
       }
     }
 
     let stat = installer.wait()?;
     if !stat.success() {
       error!("installer exited with code {}", stat);
+      return Err(ServerInstallError::Installer);
     }
 
     info!("installer exited with code {}", stat);

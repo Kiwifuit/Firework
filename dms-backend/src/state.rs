@@ -1,3 +1,4 @@
+use log::info;
 use thiserror::Error;
 use tokio::sync::mpsc::Receiver;
 
@@ -54,6 +55,7 @@ impl DMSState {
       if worker.tx.send_timeout(job, WORKER_TIMEOUT).await.is_ok() {
         return Some(worker.id);
       }
+      info!("Worker #{} is busy", worker.id);
     }
 
     None
