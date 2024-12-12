@@ -1,33 +1,32 @@
 use crate::errors::*;
-use std::{
-  collections::HashMap,
-  fs::OpenOptions,
-  io::{Read, Write},
-  path::Path,
-};
+
+use std::collections::HashMap;
+use std::fs::OpenOptions;
+use std::io::prelude::*;
+use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 use toml::{from_str, to_string};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ModpackMetadata {
-  name: String,
-  version: String,
-  description: String,
-  author: String,
+  pub name: String,
+  pub version: String,
+  pub description: String,
+  pub author: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct LoaderMetadata {
-  loader: String,
-  version: String,
+  pub loader: String,
+  pub version: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ElytraManifest {
-  modpack: ModpackMetadata,
-  loader: LoaderMetadata,
-  dependencies: HashMap<String, String>,
+  pub modpack: ModpackMetadata,
+  pub loader: LoaderMetadata,
+  pub dependencies: HashMap<String, String>,
 }
 
 impl ElytraManifest {
