@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+serde.workspace = true
+thiserror.workspace = true
+log.workspace = true
+toml = "0.8.19"
 
 [lints]
 workspace = true

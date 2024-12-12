@@ -452,6 +452,12 @@ dependencies = [
 [[package]]
 name = "elytra"
 version = "0.1.0"
+dependencies = [
+ "log",
+ "serde",
+ "thiserror",
+ "toml",
+]
 
 [[package]]
 name = "encoding_rs"
