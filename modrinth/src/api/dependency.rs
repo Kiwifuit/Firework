@@ -142,7 +142,7 @@ mod test {
     let client = get_client().await.unwrap();
 
     let query = ProjectQueryBuilder::new()
-      .query("BotaniaCombat")
+      .query("appleskin")
       .limit(1)
       .index_by(IndexBy::Relevance)
       .build();

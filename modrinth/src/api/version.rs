@@ -53,7 +53,8 @@ where
 {
   info!("Searching for versions with params: {:?}", params);
 
-  let resp: Vec<ModrinthProjectVersion> = client
+  //   :Vec<ModrinthProjectVersion>
+  let resp = client
     // TODO: ADD ERROR
     .get(format!(
       "{}/v2/project/{}/version",
@@ -65,7 +66,7 @@ where
     .await
     .unwrap()
     // .text()
-    .json()
+    .json::<Vec<ModrinthProjectVersion>>()
     .await?;
 
   Ok(resp)

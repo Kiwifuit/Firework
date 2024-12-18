@@ -48,10 +48,19 @@ pub async fn search_project(
     .send()
     .await
     .unwrap()
+    // .text()
+    // .await?;
     .json()
     .await?;
 
-  assert_eq!(resp.hits.len(), params.limit as usize);
+  //   dbg!(resp);
+
+  //   panic!();
+
+  assert!(
+    resp.hits.len() <= params.limit as usize,
+    "More hits were given than asked!"
+  );
   Ok(resp)
 }
 

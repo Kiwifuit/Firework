@@ -67,7 +67,7 @@ pub enum IndexBy {
 }
 
 #[cfg(feature = "types")]
-#[derive(Debug, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Deserialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 /// The loaders Modrinth supports
 pub enum Loader {

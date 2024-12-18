@@ -13,3 +13,5 @@ pub use types::query::{ProjectQueryBuilder, VersionQueryBuilder};
 pub use types::version::ModrinthProjectVersion;
 #[cfg(feature = "types")]
 pub use types::{Facet, FacetOp, IndexBy, Loader, ProjectType};
+
+pub use reqwest::Client;

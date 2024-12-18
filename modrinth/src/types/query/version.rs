@@ -15,7 +15,18 @@ pub struct VersionQuery {
     serialize_with = "crate::types::serialize_vec_urlencoded"
   )]
   pub(crate) game_versions: Vec<String>,
-  pub(crate) featured: bool,
+
+  // A quick note on this field:
+  // This url:
+  //  https://api.modrinth.com/v2/project/appleskin/version?loaders=[%22forge%22]&game_versions=[%221.20.1%22]
+  // Returns 2 versions, one with `featured: true` and the other
+  // with `featured: false`
+  // Explicitly adding this `featured` field or strictly making
+  // it a boolean is not optimal - we cannot find versions where
+  // we don't care if they are featured or not, therefore this
+  // field should be tri-state, aka an Option<bool>
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub(crate) featured: Option<bool>,
 }
 
 #[derive(Debug, Default)]
@@ -57,7 +68,7 @@ impl VersionQueryBuilder {
     VersionQuery {
       loaders: self.loaders.unwrap_or_default(),
       game_versions: self.versions.unwrap_or_default(),
-      featured: self.featured.unwrap_or_default(),
+      featured: self.featured,
     }
   }
 }

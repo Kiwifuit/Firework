@@ -36,7 +36,7 @@ impl ToString for Facet {
       Self::ProjectType(project_type) => format!("project_type:{}", project_type.to_string()),
       Self::Category(category) => format!("categories:{}", category),
       Self::Loader(loader) => format!("categories:{}", loader.to_string()),
-      Self::Version(version) => format!("version:{}", version),
+      Self::Version(version) => format!("game_versions:{}", version),
       Self::OpenSource(open_source) => format!("open_source:{}", open_source),
       Self::License(license) => format!("license:{}", license),
       Self::Custom { _type, op, value } => format!("{}{}{}", _type, op.to_string(), value),
