@@ -4,11 +4,11 @@ members = [
   "denji",
   "dms-backend",
   "elytra",
-  "hangar",
-  "mar",
-  "modparser",
-  "modrinth",
-  "packparse",
+  # "hangar",
+  # "mar",
+  # "modparser",
+  # "modrinth",
+  # "packparse",
 ]
 
 [workspace.dependencies]
