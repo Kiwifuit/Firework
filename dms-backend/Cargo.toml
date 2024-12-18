@@ -27,20 +27,10 @@ fern_colored = { version = "0.6.1", features = ["colored"] }
 tower-http = { version = "0.6.1", features = ["cors"] }
 http = "1.1.0"
 directories = "5.0.1"
-
-# Debug features. I'll only need axum's
-# 'macros' feature during development
-[target.'cfg(debug_assertions)'.dependencies]
-axum = { version = "0.7.7", features = ["ws", "macros"] }
-
-# Release Features
-[target.'cfg(not(debug_assertions))'.dependencies]
 axum = { version = "0.7.7", features = ["ws"] }
-
 
 [build-dependencies]
 anyhow.workspace = true
-# lazy_static = "1.5.0"
 
 [lints]
 workspace = true
