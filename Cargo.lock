@@ -389,7 +389,6 @@ version = "0.1.0"
 dependencies = [
  "env_logger",
  "log",
- "modrinth",
  "serde",
  "thiserror",
  "tokio",
@@ -901,17 +900,6 @@ dependencies = [
  "libc",
  "wasi",
  "windows-sys 0.52.0",
-]
-
-[[package]]
-name = "modrinth"
-version = "1.2.0"
-dependencies = [
- "log",
- "reqwest",
- "serde",
- "thiserror",
- "tokio",
 ]
 
 [[package]]

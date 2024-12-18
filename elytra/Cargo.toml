@@ -9,7 +9,6 @@ thiserror.workspace = true
 log.workspace = true
 tokio.workspace = true
 
-modrinth = { path = "../modrinth" }
 toml = "0.8.19"
 
 [lints]
