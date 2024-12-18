@@ -1,5 +1,4 @@
-use crate::types::Loader;
-use crate::types::ProjectType;
+use crate::providers::modrinth::types::{Loader, ProjectType};
 use serde::Serialize;
 
 #[derive(Debug)]

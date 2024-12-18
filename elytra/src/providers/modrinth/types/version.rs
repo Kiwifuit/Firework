@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use std::rc::Rc;
 
-use crate::Loader;
+use super::Loader;
 
 #[derive(Debug, Deserialize)]
 /// Represents a version of a Modrinth project.

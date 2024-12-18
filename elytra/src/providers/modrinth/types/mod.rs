@@ -1,21 +1,14 @@
 #![allow(clippy::ptr_arg)]
-#[cfg(feature = "types")]
 use serde::{Deserialize, Serialize, Serializer};
 use std::rc::Rc;
 
-#[cfg(feature = "types")]
-pub mod project;
-#[cfg(feature = "types")]
+// pub mod project;
 pub mod query;
-#[cfg(feature = "types")]
-pub mod result;
-#[cfg(feature = "types")]
-pub mod version;
+// pub mod result;
+// pub mod version;
 
-#[cfg(feature = "types")]
 pub use query::{Facet, FacetOp};
 
-#[cfg(feature = "types")]
 pub(crate) trait ModrinthProjectMeta {
   type Id;
 
@@ -25,7 +18,6 @@ pub(crate) trait ModrinthProjectMeta {
   }
 }
 
-#[cfg(feature = "types")]
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]
 /// The license of a project. Can be
@@ -43,7 +35,6 @@ pub enum License {
   },
 }
 
-#[cfg(feature = "types")]
 #[derive(Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum ModRequirement {
@@ -53,7 +44,6 @@ pub enum ModRequirement {
   Unknown,
 }
 
-#[cfg(feature = "types")]
 #[derive(Debug, Serialize, Default, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 /// The mode to index by
@@ -66,7 +56,6 @@ pub enum IndexBy {
   Updated,
 }
 
-#[cfg(feature = "types")]
 #[derive(Debug, Deserialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 /// The loaders Modrinth supports
@@ -132,7 +121,6 @@ impl Serialize for Loader {
   }
 }
 
-#[cfg(feature = "types")]
 #[derive(Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum ProjectType {
@@ -162,8 +150,6 @@ impl Serialize for ProjectType {
     serializer.serialize_str(&self.to_string())
   }
 }
-
-#[cfg(feature = "types")]
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]
 pub enum Gallery {
@@ -216,6 +202,6 @@ where
 }
 
 #[expect(clippy::trivially_copy_pass_by_ref)]
-pub(in crate::types) fn is_zero(num: &u8) -> bool {
+pub fn is_zero(num: &u8) -> bool {
   *num == 0
 }

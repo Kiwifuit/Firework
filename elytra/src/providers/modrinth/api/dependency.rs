@@ -1,12 +1,14 @@
+use crate::providers::modrinth::ModrinthProjectVersion;
+
 use super::APIError;
-use crate::{
-  types::{
-    query::VersionQuery,
-    version::{ResolvedVersionDependency, VersionDependency},
-  },
-  version::{get_version, get_versions},
-  ModrinthProjectVersion,
-};
+// use crate::{
+//   types::{
+//     query::VersionQuery,
+//     version::{ResolvedVersionDependency, VersionDependency},
+//   },
+//   version::{get_version, get_versions},
+//   ModrinthProjectVersion,
+// };
 use log::{debug, info, warn};
 use reqwest::Client;
 

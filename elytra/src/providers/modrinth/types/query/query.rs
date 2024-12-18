@@ -1,5 +1,4 @@
-use crate::types::Facet;
-use crate::types::IndexBy;
+use crate::providers::modrinth::types::{is_zero, serialize_vec_nested, Facet, IndexBy};
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
@@ -9,18 +8,19 @@ pub struct ProjectQuery {
   pub(crate) query: String,
   #[serde(
     skip_serializing_if = "Vec::is_empty",
-    serialize_with = "crate::types::serialize_vec_nested"
+    serialize_with = "serialize_vec_nested"
   )]
   pub(crate) facets: Vec<Vec<Facet>>,
   // TODO: some sort of is_default thingy
   //       so that serde omits this if its
   //       set to its defaults
   pub(crate) index: IndexBy,
-  #[serde(skip_serializing_if = "crate::types::is_zero")]
+  #[serde(skip_serializing_if = "is_zero")]
   pub(crate) offset: u8,
-  #[serde(skip_serializing_if = "crate::types::is_zero")]
+  #[serde(skip_serializing_if = "is_zero")]
   pub(crate) limit: u8,
 }
+
 #[derive(Debug, Default)]
 /// Represents a complex search query for
 /// `search_projects`. Use `.build()` to build

@@ -2,10 +2,10 @@ use super::{APIError, ENDPOINT};
 use log::info;
 use reqwest::Client;
 
-use crate::types::project::ModrinthProject;
-use crate::types::query::ProjectQuery;
-use crate::types::result::SearchProjectHit;
-use crate::types::result::SearchProjectResult;
+use super::types::project::ModrinthProject;
+use super::types::query::ProjectQuery;
+use super::types::result::SearchProjectHit;
+use super::types::result::SearchProjectResult;
 
 /// Searches Modrinth projects
 ///

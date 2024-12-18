@@ -2,46 +2,20 @@
 
 use std::{rc::Rc, time::Duration};
 
-#[cfg(feature = "api")]
+use crate::errors::APIError;
 use log::{debug, error, info};
-#[cfg(feature = "api")]
 use reqwest::Client;
-#[cfg(feature = "api")]
 use thiserror::Error;
 
-#[cfg(feature = "api")]
 pub mod dependency;
-#[cfg(feature = "api")]
 pub mod project;
-#[cfg(feature = "api")]
 pub mod version;
-
-#[cfg(feature = "api")]
 pub use dependency::resolve_dependencies;
-#[cfg(feature = "api")]
 pub use project::{get_project, search_project};
-#[cfg(feature = "api")]
 pub use version::get_versions;
 
 const ENDPOINT: &str = "https://api.modrinth.com";
 
-#[cfg(feature = "api")]
-#[derive(Debug, Error)]
-pub enum APIError {
-  #[error("http error: {0}")]
-  Http(#[from] reqwest::Error),
-
-  #[error("dependency already resolved: {0}")]
-  ResolvedDependency(Rc<str>),
-
-  #[error("provided mod has no dependencies")]
-  NoDependencies,
-
-  #[error("provided mod has unresolvable dependencies")]
-  UnresolvableDependency,
-}
-
-#[cfg(feature = "api")]
 /// Checks Modrinth's availability.
 /// This function returns a `Client`, but it is up to
 /// you to see if the ping to [Modrinth's API Endpoint](https://api.modrinth.com)
@@ -86,7 +60,6 @@ pub async fn check_api() -> Result<(bool, Client), APIError> {
   Ok((resp.is_ok(), client))
 }
 
-#[cfg(feature = "api")]
 /// Checks if Modrinth is available and returns a `Client` if it does
 ///
 /// ## Errors
@@ -119,7 +92,7 @@ pub async fn get_client() -> Option<Client> {
 }
 
 #[cfg(test)]
-#[cfg(feature = "api")]
+
 mod tests {
   use super::check_api;
 

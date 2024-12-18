@@ -1,4 +1,4 @@
-use crate::types::Loader;
+use crate::providers::modrinth::types::{serialize_vec_urlencoded, Loader};
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
@@ -7,12 +7,12 @@ use serde::Serialize;
 pub struct VersionQuery {
   #[serde(
     skip_serializing_if = "Vec::is_empty",
-    serialize_with = "crate::types::serialize_vec_urlencoded"
+    serialize_with = "serialize_vec_urlencoded"
   )]
   pub(crate) loaders: Vec<Loader>,
   #[serde(
     skip_serializing_if = "Vec::is_empty",
-    serialize_with = "crate::types::serialize_vec_urlencoded"
+    serialize_with = "serialize_vec_urlencoded"
   )]
   pub(crate) game_versions: Vec<String>,
 
