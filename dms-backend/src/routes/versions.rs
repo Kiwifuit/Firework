@@ -48,7 +48,6 @@ pub async fn get_loaders() -> Json<Vec<String>> {
   )
 }
 
-#[cfg_attr(debug_assertions, axum::debug_handler)]
 pub async fn get_loader_version(
   Path(loader): Path<String>,
 ) -> Result<Json<Vec<String>>, VersionError> {

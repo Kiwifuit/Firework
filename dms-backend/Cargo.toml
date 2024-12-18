@@ -4,10 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-packparse = { path = "../packparse", optional = true }
-modparser = { path = "../modparser", optional = true }
-modrinth = { path = "../modrinth", optional = true }
-hangar = { path = "../hangar", optional = true }
+# packparse = { path = "../packparse", optional = true }
+# modparser = { path = "../modparser", optional = true }
+# modrinth = { path = "../modrinth", optional = true }
+# hangar = { path = "../hangar", optional = true }
 denji = { path = "../denji" }
 mar = { path = "../mar" }
 
@@ -38,13 +38,13 @@ workspace = true
 [features]
 default = []
 
-all-providers = ["provider-modrinth", "provider-hangar", "provider-curse"]
-provider-modrinth = ["dep:modrinth"]
-provider-hangar = ["dep:hangar"]
-provider-curse = []
+# all-providers = ["provider-modrinth", "provider-hangar", "provider-curse"]
+# provider-modrinth = ["dep:modrinth"]
+# provider-hangar = ["dep:hangar"]
+# provider-curse = []
 
-all-parsers = ["parser-modpack", "parser-modjar"]
-parser-modpack = ["dep:packparse"]
-parser-modjar = ["dep:modparser"]
+# all-parsers = ["parser-modpack", "parser-modjar"]
+# parser-modpack = ["dep:packparse"]
+# parser-modjar = ["dep:modparser"]
 
-dms = ["all-providers", "all-parsers"]
+# dms = ["all-providers", "all-parsers"]
