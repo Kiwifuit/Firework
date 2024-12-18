@@ -8,8 +8,21 @@ serde.workspace = true
 thiserror.workspace = true
 log.workspace = true
 tokio.workspace = true
+reqwest = { workspace = true, optional = true }
+zip = { workspace = true, optional = true }
 
 toml = "0.8.19"
+
+[features]
+default = ["providers-modrinth", "utils-modpack", "utils-mod"]
+
+providers-base = ["dep:reqwest"]
+providers-hangar = ["providers-base"]
+providers-modrinth = ["providers-base"]
+
+utils-base = ["dep:zip"]
+utils-modpack = ["utils-base"]
+utils-mod = ["utils-base"]
 
 [lints]
 workspace = true
