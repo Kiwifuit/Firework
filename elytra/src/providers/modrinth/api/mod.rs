@@ -91,7 +91,6 @@ pub async fn get_client() -> Option<Client> {
 }
 
 #[cfg(test)]
-
 mod tests {
   use super::check_api;
 
