@@ -1,4 +1,5 @@
-use crate::types::{query::search::SearchQuery, HangarProjects};
+use crate::providers::hangar::types::query::search::SearchQuery;
+use crate::providers::hangar::types::HangarProjects;
 use reqwest::Client;
 use thiserror::Error;
 
@@ -26,7 +27,7 @@ pub async fn search_project(
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::SearchQueryBuilder;
+  use crate::providers::hangar::SearchQueryBuilder;
 
   #[tokio::test]
   async fn test_search_project() {

@@ -110,7 +110,7 @@ impl FromStr for FabricDependencyVersion {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::unzip::grab_meta_file;
+  use crate::utils::parse::unzip::grab_meta_file;
   use serde_json::from_str;
   use std::fs::read_dir;
 

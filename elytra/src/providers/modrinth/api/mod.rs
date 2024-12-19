@@ -1,11 +1,10 @@
-#![cfg_attr(not(feature = "api"), allow(unused_imports, dead_code))]
+// #![cfg_attr(not(feature = "api"), allow(unused_imports, dead_code))]
 
-use std::{rc::Rc, time::Duration};
+use std::time::Duration;
 
 use crate::errors::APIError;
 use log::{debug, error, info};
 use reqwest::Client;
-use thiserror::Error;
 
 pub mod dependency;
 pub mod project;

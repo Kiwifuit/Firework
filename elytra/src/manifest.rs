@@ -5,8 +5,11 @@ use std::fs::OpenOptions;
 use std::io::prelude::*;
 use std::path::Path;
 
+use crate::providers::modrinth::{
+  get_versions, resolve_dependencies, search_project, Client, Facet, IndexBy, Loader,
+  ModrinthProjectVersion, ProjectQueryBuilder, ProjectType, VersionQueryBuilder,
+};
 use log::{debug, error, info};
-use modrinth::{Facet, ProjectQueryBuilder, VersionQueryBuilder};
 use serde::{Deserialize, Serialize};
 use toml::{from_str, to_string};
 
@@ -20,7 +23,7 @@ pub struct ModpackMetadata {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct LoaderMetadata {
-  pub loader: modrinth::Loader,
+  pub loader: Loader,
   pub version: String,
 }
 
@@ -57,8 +60,8 @@ impl ElytraManifest {
 
   pub async fn fetch_dependencies(
     &mut self,
-    client: &modrinth::Client,
-  ) -> Result<Vec<modrinth::ModrinthProjectVersion>, ManifestError> {
+    client: &Client,
+  ) -> Result<Vec<ModrinthProjectVersion>, ManifestError> {
     info!("{} mod(s) to fetch", self.dependencies.len() - 1);
     let mut mods = vec![];
     // TODO: THIS CAN KILL A PROGRAM
@@ -69,15 +72,15 @@ impl ElytraManifest {
 
       let query = ProjectQueryBuilder::new()
         .query(name)
-        .index_by(modrinth::IndexBy::Relevance)
+        .index_by(IndexBy::Relevance)
         .facets(vec![
           vec![Facet::Loader(self.loader.loader.clone())],
           vec![Facet::Version(minecraft_version.clone().to_string())],
-          vec![Facet::ProjectType(modrinth::ProjectType::Mod)],
+          vec![Facet::ProjectType(ProjectType::Mod)],
         ])
         .build();
 
-      let query_response = modrinth::search_project(client, &query).await?;
+      let query_response = search_project(client, &query).await?;
       let projects = query_response.hits;
       let project = projects
         .iter()
@@ -89,7 +92,7 @@ impl ElytraManifest {
         .loaders(vec![self.loader.loader.clone()])
         .build();
 
-      let mut version = modrinth::get_versions(client, project, &version_query)
+      let mut version = get_versions(client, project, &version_query)
         .await
         .inspect_err(|e| error!("Error while fetching versions: {}", e))?
         .into_iter()
@@ -102,13 +105,13 @@ impl ElytraManifest {
 
       debug!("Resolved {} to v{}", name, version.version_number);
 
-      let resp = modrinth::resolve_dependencies(client, &mut version, &version_query, |versions| {
+      let resp = resolve_dependencies(client, &mut version, &version_query, |versions| {
         versions.into_iter().next().unwrap()
       })
       .await;
 
       match resp {
-        Err(modrinth::APIError::NoDependencies) | Ok(()) => {
+        Err(crate::errors::APIError::NoDependencies) | Ok(()) => {
           info!("Mod was resolved successfully");
           mods.push(version);
         }
@@ -173,7 +176,7 @@ xaeros-minimap = "24.6.1"
 immediatelyfast = "1.3.3+1.20.4-forge"
 appleskin = "2.5.1+mc1.20.1""#;
 
-    let client = modrinth::get_client()
+    let client = crate::providers::modrinth::get_client()
       .await
       .expect("expected client to be constructed");
     let manifest = ElytraManifest::from_str(manifest_raw);

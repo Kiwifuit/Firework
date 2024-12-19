@@ -8,16 +8,22 @@ serde.workspace = true
 thiserror.workspace = true
 log.workspace = true
 tokio.workspace = true
+toml = "0.8.19"
+
 reqwest = { workspace = true, optional = true }
 zip = { workspace = true, optional = true }
+bitflags = { version = "2.6.0", features = ["serde"], optional = true }
+chrono = { version = "0.4.38", default-features = false, features = [
+  "std",
+  "serde",
+], optional = true }
 
-toml = "0.8.19"
 
 [features]
 default = ["providers-modrinth", "utils-modpack", "utils-mod"]
 
 providers-base = ["dep:reqwest"]
-providers-hangar = ["providers-base"]
+providers-hangar = ["providers-base", "dep:bitflags", "dep:chrono"]
 providers-modrinth = ["providers-base"]
 
 utils-base = ["dep:zip"]
@@ -29,3 +35,5 @@ workspace = true
 
 [dev-dependencies]
 env_logger = "0.11.5"
+serde_urlencoded = "0.7.1"
+serde_json.workspace = true

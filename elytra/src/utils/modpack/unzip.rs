@@ -6,8 +6,8 @@ use log::{debug, error, info};
 use thiserror::Error;
 use zip::ZipArchive;
 
-use crate::types::ModpackProviderMetadata;
-use crate::ModpackProvider;
+use crate::utils::modpack::types::ModpackProviderMetadata;
+use crate::utils::modpack::ModpackProvider;
 
 const FORGE_META: &str = "manifest.json";
 const MODRINTH_META: &str = "modrinth.index.json";

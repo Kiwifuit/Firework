@@ -2,10 +2,10 @@
 use serde::{Deserialize, Serialize, Serializer};
 use std::rc::Rc;
 
-// pub mod project;
+pub mod project;
 pub mod query;
-// pub mod result;
-// pub mod version;
+pub mod result;
+pub mod version;
 
 pub use query::{Facet, FacetOp};
 

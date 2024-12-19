@@ -1,5 +1,5 @@
 use super::GenericPagination;
-use crate::types::{HangarPlatform, HangarTags};
+use crate::providers::hangar::types::{HangarPlatform, HangarTags};
 use serde::Serialize;
 
 use std::rc::Rc;

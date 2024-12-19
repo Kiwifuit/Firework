@@ -4,9 +4,9 @@ use super::{APIError, ENDPOINT};
 use log::info;
 use reqwest::Client;
 
-use crate::types::query::VersionQuery;
-use crate::types::version::ModrinthProjectVersion;
-use crate::types::ModrinthProjectMeta;
+use crate::providers::modrinth::types::query::VersionQuery;
+use crate::providers::modrinth::types::version::ModrinthProjectVersion;
+use crate::providers::modrinth::types::ModrinthProjectMeta;
 
 #[expect(private_bounds)]
 /// Lists versions of `project`
@@ -101,7 +101,7 @@ where
 #[cfg(test)]
 mod test {
   use super::*;
-  use crate::{
+  use crate::providers::modrinth::{
     get_client, search_project, IndexBy, Loader, ProjectQueryBuilder, VersionQueryBuilder,
   };
 

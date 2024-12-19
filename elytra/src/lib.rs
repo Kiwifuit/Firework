@@ -1,7 +1,7 @@
 pub mod errors;
 pub mod manifest;
 
-#[cfg("providers-base")]
+#[cfg(feature = "providers-base")]
 pub mod providers;
-#[cfg("utils-base")]
+#[cfg(feature = "utils-base")]
 pub mod utils;

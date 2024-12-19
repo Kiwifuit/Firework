@@ -273,7 +273,7 @@ pub enum ModVersionRangeMode {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::unzip::grab_meta_file;
+  use crate::utils::parse::unzip::grab_meta_file;
   use std::fs::read_dir;
   use toml::from_str;
 

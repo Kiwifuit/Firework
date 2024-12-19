@@ -1,3 +1,6 @@
+use crate::providers::modrinth::api::version::{get_version, get_versions};
+use crate::providers::modrinth::types::query::VersionQuery;
+use crate::providers::modrinth::types::version::{ResolvedVersionDependency, VersionDependency};
 use crate::providers::modrinth::ModrinthProjectVersion;
 
 use super::APIError;
@@ -135,7 +138,7 @@ where
 #[cfg(test)]
 mod test {
   use super::*;
-  use crate::{
+  use crate::providers::modrinth::{
     get_client, search_project, IndexBy, Loader, ProjectQueryBuilder, VersionQueryBuilder,
   };
 

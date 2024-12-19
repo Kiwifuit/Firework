@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::types::{
+use crate::providers::hangar::types::{
   project::HangarProject, query::version::VersionQuery, version::HangarVersion, HangarPlatform,
   HangarVersions,
 };
@@ -68,7 +68,7 @@ pub fn get_download_link<T: Display>(slug: T, name: T, platform: HangarPlatform)
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::{search_project, SearchQueryBuilder, VersionQueryBuilder};
+  use crate::providers::hangar::{search_project, SearchQueryBuilder, VersionQueryBuilder};
 
   #[tokio::test]
   async fn test_get_versions() {

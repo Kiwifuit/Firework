@@ -1,4 +1,4 @@
 #[cfg(feature = "utils-modpack")]
-pub mod mpp; // ModPackParse
+pub mod modpack; // ModPackParse
 #[cfg(feature = "utils-mod")]
 pub mod parse;

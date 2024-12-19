@@ -2,10 +2,10 @@ use super::{APIError, ENDPOINT};
 use log::info;
 use reqwest::Client;
 
-use super::types::project::ModrinthProject;
-use super::types::query::ProjectQuery;
-use super::types::result::SearchProjectHit;
-use super::types::result::SearchProjectResult;
+use crate::providers::modrinth::types::project::ModrinthProject;
+use crate::providers::modrinth::types::query::ProjectQuery;
+use crate::providers::modrinth::types::result::SearchProjectHit;
+use crate::providers::modrinth::types::result::SearchProjectResult;
 
 /// Searches Modrinth projects
 ///
@@ -114,11 +114,11 @@ pub async fn get_project(
 #[cfg(test)]
 mod test {
   use super::*;
-  use crate::api::get_client;
-  use crate::types::query::ProjectQueryBuilder;
-  use crate::types::Facet;
-  use crate::types::Loader;
-  use crate::types::{IndexBy, ProjectType};
+  use crate::providers::modrinth::api::get_client;
+  use crate::providers::modrinth::types::query::ProjectQueryBuilder;
+  use crate::providers::modrinth::types::Facet;
+  use crate::providers::modrinth::types::Loader;
+  use crate::providers::modrinth::types::{IndexBy, ProjectType};
 
   #[tokio::test]
   async fn check_search_projects() {
