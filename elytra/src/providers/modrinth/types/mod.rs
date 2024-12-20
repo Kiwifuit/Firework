@@ -201,7 +201,6 @@ where
   )
 }
 
-#[expect(clippy::trivially_copy_pass_by_ref)]
-pub fn is_zero(num: &u8) -> bool {
-  *num == 0
+pub fn is_zero(num: u8) -> bool {
+  num == 0
 }
