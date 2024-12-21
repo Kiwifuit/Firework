@@ -43,23 +43,23 @@ fn main() -> anyhow::Result<()> {
   //   );
 
   // Feature listing
-  detect_feature!("dms");
-  detect_feature!("all-providers");
-  detect_feature!("all-parsers");
+  //   detect_feature!("dms");
+  //   detect_feature!("all-providers");
+  //   detect_feature!("all-parsers");
 
-  #[cfg(not(feature = "all-providers"))]
-  detect_feature!("provider-modrinth");
+  //   #[cfg(not(feature = "all-providers"))]
+  //   detect_feature!("provider-modrinth");
 
-  #[cfg(not(feature = "all-providers"))]
-  detect_feature!("provider-hangar");
+  //   #[cfg(not(feature = "all-providers"))]
+  //   detect_feature!("provider-hangar");
 
-  #[cfg(not(feature = "all-providers"))]
-  detect_feature!("provider-curse");
+  //   #[cfg(not(feature = "all-providers"))]
+  //   detect_feature!("provider-curse");
 
-  #[cfg(not(feature = "all-parsers"))]
-  detect_feature!("parser-modpack");
-  #[cfg(not(feature = "all-parsers"))]
-  detect_feature!("parser-modjar");
+  //   #[cfg(not(feature = "all-parsers"))]
+  //   detect_feature!("parser-modpack");
+  //   #[cfg(not(feature = "all-parsers"))]
+  //   detect_feature!("parser-modjar");
 
   println!("cargo::rustc-env=CRATE_FEATURES={}", unsafe {
     FEATURES.join(",")
