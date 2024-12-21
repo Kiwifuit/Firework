@@ -201,6 +201,6 @@ where
   )
 }
 
-pub fn is_zero(num: u8) -> bool {
-  num == 0
+pub fn is_zero(num: &u8) -> bool {
+  *num == 0
 }
