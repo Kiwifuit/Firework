@@ -1,11 +1,12 @@
 use std::sync::Arc;
 
+use elytra::manifest::ElytraManifest;
 use tokio::sync::mpsc::Sender;
 // use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Default)]
+#[derive(Debug, Serialize, Default, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum ServerStatus {
   Online,
@@ -46,9 +47,18 @@ pub enum WorkerResponse {
 //     message: WorkerJob
 // }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone)]
 pub struct MinecraftServer {
-  manifest: ServerManifest,
+  #[serde(skip)]
+  pub manifest: Arc<ElytraManifest>,
+  pub status: ServerStatus,
+  pub players: PlayerStats,
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct PlayerStats {
+  online: u8,
+  total: u8,
 }
 
 #[derive(Clone, Debug)]
