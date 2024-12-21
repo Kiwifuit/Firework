@@ -10,7 +10,7 @@ pub fn init() -> anyhow::Result<()> {
     .warn(Color::BrightYellow)
     .error(Color::BrightRed);
 
-  fern_colored::Dispatch::new()
+  let dispatcher = fern_colored::Dispatch::new()
     .format(move |out, message, record| {
       out.finish(format_args!(
         "{} {}\t{}",
@@ -25,11 +25,14 @@ pub fn init() -> anyhow::Result<()> {
         message,
       ));
     })
-    // set the default log level. to filter out verbose log messages from dependencies, set
-    // this to Warn and overwrite the log level for your crate.
-    .level(log::LevelFilter::Info)
     // output to stdout
-    .chain(std::io::stdout())
-    .apply()
-    .context("while initializing logger")
+    .chain(std::io::stdout());
+
+  #[cfg(debug_assertions)]
+  let dispatcher = dispatcher.level(log::LevelFilter::Debug);
+
+  #[cfg(not(debug_assertions))]
+  let dispatcher = dispatcher.level(log::LevelFilter::Warn);
+
+  dispatcher.apply().context("while initializing logger")
 }
