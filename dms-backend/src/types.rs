@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use tokio::sync::mpsc::Sender;
 // use std::sync::Arc;
 
@@ -22,7 +24,10 @@ pub struct ServerBuildParams {
 
 #[derive(Debug, Clone)]
 pub enum WorkerMessage {
-  Build(ServerBuildParams),
+  Build {
+    params: ServerBuildParams,
+    context: Arc<crate::state::DMSState>,
+  },
   Start(MinecraftServer),
   Stop(MinecraftServer),
   Attach(MinecraftServer),
@@ -46,7 +51,7 @@ pub struct MinecraftServer {
   manifest: ServerManifest,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Worker {
   pub id: usize,
   pub rx: Sender<WorkerMessage>, // main -> worker

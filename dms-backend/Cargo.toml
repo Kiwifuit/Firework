@@ -4,10 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-# packparse = { path = "../packparse", optional = true }
-# modparser = { path = "../modparser", optional = true }
-# modrinth = { path = "../modrinth", optional = true }
-# hangar = { path = "../hangar", optional = true }
+elytra = { path = "../elytra", default-features = false, optional = true }
 denji = { path = "../denji" }
 mar = { path = "../mar" }
 

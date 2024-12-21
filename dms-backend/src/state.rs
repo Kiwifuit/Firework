@@ -1,7 +1,11 @@
+use directories::ProjectDirs;
+use log::debug;
 use log::info;
 use thiserror::Error;
 use tokio::sync::mpsc::Receiver;
 
+use crate::errors::StateError;
+use crate::types::MinecraftServer;
 use crate::types::Worker;
 use crate::types::WorkerMessage;
 use crate::worker::create_worker_thread;
@@ -13,25 +17,24 @@ use tokio::sync::mpsc;
 
 const WORKER_TIMEOUT: Duration = Duration::from_micros(20);
 
-#[derive(Debug, Error)]
-pub enum StateError {
-  #[error("I/O Error: {0}")]
-  Io(#[from] std::io::Error),
-
-  #[error("JSON de/serialization error: {0}")]
-  Json(#[from] serde_json::Error),
-}
-
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct DMSState {
   workers: Vec<Worker>,
   worker_channel: Arc<Receiver<WorkerMessage>>,
-  data_dir: PathBuf,
+  pub data_dir: PathBuf,
+  pub servers: Vec<MinecraftServer>,
 }
 
 impl DMSState {
   pub fn new(worker_threads: usize) -> Result<Self, StateError> {
-    let data_dir = PathBuf::from("./target/servers/");
+    let project_dirs =
+      ProjectDirs::from("tar.xz", "inhumane", "firework").ok_or(StateError::DataDirFail)?;
+
+    let data_dir = project_dirs.data_dir().to_path_buf();
+
+    debug!("Resolved data dir to: {}", data_dir.display());
+    info!("Spinning {} worker thread(s)", worker_threads);
+
     let mut workers = vec![];
     let (server_tx, server_rx) = mpsc::channel::<crate::types::WorkerMessage>(100);
 
@@ -41,10 +44,13 @@ impl DMSState {
       workers.push(create_worker_thread(task_id, server_tx));
     }
 
+    info!("Server is ready");
+
     Ok(Self {
       data_dir,
       workers,
       worker_channel: Arc::new(server_rx),
+      servers: vec![],
     })
   }
 

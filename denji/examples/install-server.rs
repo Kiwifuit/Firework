@@ -22,7 +22,7 @@ async fn main() -> Result<()> {
     "1.20.4",
     temp_dir.path().to_owned(),
   );
-  let (tx, rx) = channel();
+  let (tx, rx) = channel::<String>();
   let server_build = spawn(async move { server_installer.build_server(tx).await });
 
   info!(

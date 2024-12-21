@@ -1,8 +1,13 @@
+use std::sync::Arc;
+
 use anyhow::Context;
 use log::{error, info, warn};
 use tokio::sync::mpsc::{channel, Sender};
 
-use crate::types::{ServerBuildParams, Worker, WorkerMessage, WorkerResponse};
+use crate::{
+  state::DMSState,
+  types::{MinecraftServer, ServerBuildParams, Worker, WorkerMessage, WorkerResponse},
+};
 
 pub fn create_worker_thread(task_id: usize, server_tx: Sender<WorkerMessage>) -> Worker {
   let (task_tx, mut task_rx) = channel::<crate::types::WorkerMessage>(100);
@@ -36,14 +41,14 @@ pub fn create_worker_thread(task_id: usize, server_tx: Sender<WorkerMessage>) ->
 
 async fn handle_message(message: WorkerMessage) -> anyhow::Result<()> {
   match message {
-    WorkerMessage::Build(params) => build_server(params).await?,
+    WorkerMessage::Build { params, context } => build_server(params, context).await?,
     _ => todo!(),
   }
 
   Ok(())
 }
 
-async fn build_server(params: ServerBuildParams) -> anyhow::Result<()> {
+async fn build_server(params: ServerBuildParams, context: Arc<DMSState>) -> anyhow::Result<()> {
   info!(
     "Building server {} for {} {}",
     params.name, params.server, params.server_version
@@ -67,13 +72,16 @@ async fn build_server(params: ServerBuildParams) -> anyhow::Result<()> {
     &params.server_version,
     "target/servers/dummy/",
   );
-  let task = tokio::task::spawn(async move {
+
+  tokio::task::spawn(async move {
     if let Err(e) = server_build.build_server(tx).await {
       error!("An error occurred while building the server: {:?}", e);
     }
   })
   .await
   .expect("expected this task to not return any errors");
+
+  //   context.servers.push(MinecraftServer);
 
   Ok(())
 }

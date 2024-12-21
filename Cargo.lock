@@ -421,6 +421,7 @@ dependencies = [
  "chrono",
  "denji",
  "directories",
+ "elytra",
  "fern_colored",
  "http",
  "log",

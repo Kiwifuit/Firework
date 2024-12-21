@@ -10,6 +10,7 @@ use owo_colors::OwoColorize;
 use tokio::net::TcpListener;
 use tower_http::cors::CorsLayer;
 
+mod errors;
 mod logger;
 mod routes;
 mod state;
@@ -36,11 +37,6 @@ async fn main() -> anyhow::Result<()> {
 
   info!("Good morning!");
   let server_state = Arc::new(state::DMSState::new(4).context("while initializing server")?);
-
-  //   let appdir = ProjectDirs::from("xz", "tar", "dms").unwrap();
-  //   let state = Arc::new(ServerState {
-  //     root_dir: appdir.data_dir().to_path_buf(),
-  //   });
 
   let ip_addr = var("DMS_HOST").unwrap_or(String::from("localhost:3030"));
 
