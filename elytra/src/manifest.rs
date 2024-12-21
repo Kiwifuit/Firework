@@ -1,9 +1,9 @@
 use crate::errors::*;
 
 use std::collections::HashMap;
-use std::fs::OpenOptions;
-use std::io::prelude::*;
-use std::path::Path;
+// use std::fs::OpenOptions;
+// use std::io::prelude::*;
+// use std::path::Path;
 
 use crate::providers::modrinth::{
   get_versions, resolve_dependencies, search_project, Client, Facet, IndexBy, Loader,
@@ -11,7 +11,7 @@ use crate::providers::modrinth::{
 };
 use log::{debug, error, info};
 use serde::{Deserialize, Serialize};
-use toml::{from_str, to_string};
+// use toml::{from_str, to_string};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ModpackMetadata {
@@ -35,29 +35,6 @@ pub struct ElytraManifest {
 }
 
 impl ElytraManifest {
-  pub fn from_path<P: AsRef<Path>>(file: P) -> Result<Self, ManifestError> {
-    let mut file = OpenOptions::new().read(true).open(file)?;
-    let mut buf = String::new();
-
-    file.read_to_string(&mut buf)?;
-    Self::from_str(buf)
-  }
-
-  fn from_str<S: ToString>(contents: S) -> Result<Self, ManifestError> {
-    let manifest = from_str(&(contents.to_string()))?;
-
-    Ok(manifest)
-  }
-
-  pub fn save_to<P: AsRef<Path>>(self, file: P) -> Result<(), ManifestError> {
-    let manifest_str = to_string(&self)?;
-    let mut file = OpenOptions::new().write(true).truncate(true).open(file)?;
-
-    file.write_all(manifest_str.as_bytes())?;
-
-    Ok(())
-  }
-
   pub async fn fetch_dependencies(
     &mut self,
     client: &Client,
@@ -128,6 +105,7 @@ impl ElytraManifest {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use toml::from_str;
 
   #[test]
   fn manifest_read() {
@@ -149,7 +127,7 @@ xaeros-minimap = "24.6.1"
 immediatelyfast = "1.3.3+1.20.4-forge"
 appleskin = "2.5.1+mc1.20.1"
 "#;
-    let manifest = ElytraManifest::from_str(manifest_raw);
+    let manifest = from_str::<ElytraManifest>(manifest_raw);
 
     assert!(manifest.is_ok_and(|m| !m.dependencies.is_empty()));
   }
@@ -179,7 +157,7 @@ appleskin = "2.5.1+mc1.20.1""#;
     let client = crate::providers::modrinth::get_client()
       .await
       .expect("expected client to be constructed");
-    let manifest = ElytraManifest::from_str(manifest_raw);
+    let manifest = from_str::<ElytraManifest>(manifest_raw);
 
     assert!(manifest.as_ref().is_ok_and(|m| !m.dependencies.is_empty()));
 
