@@ -56,10 +56,12 @@ pub enum IndexBy {
   Updated,
 }
 
-#[derive(Debug, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Deserialize, Clone, PartialEq, Eq, Default)]
 #[serde(rename_all = "lowercase")]
 /// The loaders Modrinth supports
 pub enum Loader {
+  #[default]
+  Unknown,
   Bukkit,
   Bungeecord,
   Canvas,
@@ -107,6 +109,7 @@ impl ToString for Loader {
       Self::Vanilla => "vanilla",
       Self::Velocity => "velocity",
       Self::Waterfall => "waterfall",
+      Self::Unknown => "unknown",
     }
     .to_string()
   }

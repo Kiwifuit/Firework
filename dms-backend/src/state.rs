@@ -1,19 +1,27 @@
 use directories::ProjectDirs;
 use log::debug;
+use log::error;
 use log::info;
-use thiserror::Error;
+use log::warn;
+use owo_colors::OwoColorize;
+use tokio::sync::mpsc;
 use tokio::sync::mpsc::Receiver;
 
+use crate::errors::ServerError;
 use crate::errors::StateError;
 use crate::types::MinecraftServer;
 use crate::types::Worker;
 use crate::types::WorkerMessage;
 use crate::worker::create_worker_thread;
+
+use std::fs::create_dir;
+use std::fs::read_dir;
+use std::fs::OpenOptions;
+use std::io::BufReader;
+use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
-
-use tokio::sync::mpsc;
 
 const WORKER_TIMEOUT: Duration = Duration::from_micros(20);
 
@@ -66,6 +74,66 @@ impl DMSState {
 
     None
   }
+
+  pub fn list_servers(&mut self) -> Result<(), ServerError> {
+    info!("Querying servers");
+
+    debug!(
+      "Searching for servers within: {}",
+      self.data_dir.display().magenta()
+    );
+    let servers = if !self.data_dir.exists() {
+      warn!("Creating data dir");
+      create_dir(&self.data_dir)?;
+
+      vec![]
+    } else {
+      read_dir(&self.data_dir)?
+        .map_while(|entry| match entry {
+          Err(err) => {
+            warn!("Error while fetching direntry: {}", err);
+            None
+          }
+          Ok(ent) => {
+            let path = ent.path();
+
+            info!("Found server: {}", path.display());
+
+            read_server(&path)
+              .map_err(|e| {
+                error!("An error occured while reading server data: {}", e);
+                warn!(
+                  "The server on {} will not be listed",
+                  path.display().magenta()
+                )
+              })
+              .ok()
+          }
+        })
+        .collect::<Vec<_>>()
+    };
+
+    info!("Found {} server(s) total", servers.len());
+    self.servers = servers;
+
+    Ok(())
+  }
+}
+
+fn read_server(path: &Path) -> Result<MinecraftServer, ServerError> {
+  let manifest_file = BufReader::new(
+    OpenOptions::new()
+      .read(true)
+      .write(false)
+      .open(path.join("server.json"))?,
+  );
+
+  let manifest = serde_json::from_reader(manifest_file)?;
+
+  Ok(MinecraftServer {
+    manifest,
+    ..Default::default()
+  })
 }
 
 // fn fetch_manifest<P: AsRef<Path>>(path: P) -> Result<MinecraftServerManifest, StateError> {

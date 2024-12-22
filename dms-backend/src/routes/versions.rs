@@ -11,6 +11,8 @@ use serde::Serialize;
 use serde_json::json;
 use thiserror::Error;
 
+use crate::types::DMSResponse;
+
 #[derive(Debug, Serialize, Error)]
 pub enum VersionError {
   #[error("Failed to parse artifact id: {reason}")]
@@ -32,8 +34,8 @@ impl IntoResponse for VersionError {
   }
 }
 
-pub async fn get_loaders() -> Json<Vec<String>> {
-  Json(
+pub async fn get_loaders() -> DMSResponse<Vec<String>, ()> {
+  DMSResponse::Success(
     [
       "NeoForge",
       "Forge",
@@ -50,15 +52,29 @@ pub async fn get_loaders() -> Json<Vec<String>> {
 
 pub async fn get_loader_version(
   Path(loader): Path<String>,
-) -> Result<Json<Vec<String>>, VersionError> {
+) -> DMSResponse<Vec<String>, VersionError> {
   info!("Querying versions for loader: {}", loader.blue());
 
+  // TODO: Revamp this piece of shit and
+  //       use FromResidual & Try to make a
+  //       `Result<T, E>` custom impl once
+  //       https://github.com/rust-lang/rust/issues/84277
+  //       has been stabilized, hopefully
   let artifact =
-    get_loader_artifact(loader.to_lowercase().as_str()).ok_or(VersionError::Artifact {
+    match get_loader_artifact(loader.to_lowercase().as_str()).ok_or(VersionError::Artifact {
       reason: format!("No such loader: {}", loader),
-    })?;
+    }) {
+      Ok(a) => a,
+      Err(e) => return DMSResponse::Fail(e),
+    };
 
-  let artifact_versions = get_versions(&artifact).await?;
+  let artifact_versions = match get_versions(&artifact).await {
+    Ok(versions) => versions,
+    Err(err) => {
+      return DMSResponse::Fail(VersionError::Repository(err));
+    }
+  };
+
   let versions = artifact_versions
     .versioning
     .versions()
@@ -68,7 +84,7 @@ pub async fn get_loader_version(
 
   info!("Got {} version(s) for loader", versions.len().yellow());
 
-  Ok(Json(versions))
+  DMSResponse::Success(versions)
 }
 
 fn get_loader_artifact(loader_type: &str) -> Option<MavenArtifact> {

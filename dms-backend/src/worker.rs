@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use anyhow::Context;
 use log::{error, info, warn};
@@ -48,7 +48,10 @@ async fn handle_message(message: WorkerMessage) -> anyhow::Result<()> {
   Ok(())
 }
 
-async fn build_server(params: ServerBuildParams, context: Arc<DMSState>) -> anyhow::Result<()> {
+async fn build_server(
+  params: ServerBuildParams,
+  context: Arc<RwLock<DMSState>>,
+) -> anyhow::Result<()> {
   info!(
     "Building server {} for {} {}",
     params.name, params.server, params.server_version

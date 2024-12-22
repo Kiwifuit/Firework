@@ -1,6 +1,8 @@
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
+use axum::{response::IntoResponse, Json};
 use elytra::manifest::ElytraManifest;
+use serde_json::json;
 use tokio::sync::mpsc::Sender;
 // use std::sync::Arc;
 
@@ -27,7 +29,7 @@ pub struct ServerBuildParams {
 pub enum WorkerMessage {
   Build {
     params: ServerBuildParams,
-    context: Arc<crate::state::DMSState>,
+    context: Arc<RwLock<crate::state::DMSState>>,
   },
   Start(MinecraftServer),
   Stop(MinecraftServer),
@@ -47,7 +49,7 @@ pub enum WorkerResponse {
 //     message: WorkerJob
 // }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, Default)]
 pub struct MinecraftServer {
   #[serde(skip)]
   pub manifest: Arc<ElytraManifest>,
@@ -55,7 +57,7 @@ pub struct MinecraftServer {
   pub players: PlayerStats,
 }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, Default)]
 pub struct PlayerStats {
   online: u8,
   total: u8,
@@ -68,28 +70,33 @@ pub struct Worker {
   pub tx: Sender<WorkerMessage>, // worker -> main
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct ServerManifest {}
+pub enum DMSResponse<S, F> {
+  Success(S),
+  Fail(F),
+}
 
-// #[derive(Debug, Serialize, Default)]
-// pub struct MinecraftServer {
-//   #[serde(flatten)]
-//   manifest: MinecraftServerManifest,
-//   software: String,
-//   modpack: Option<String>,
-//   status: ServerStatus,
-//   players: MinecraftServerPlayers,
-// }
-
-// #[derive(Debug, Serialize, Default)]
-// pub struct MinecraftServerPlayers {
-//   online: u32,
-//   total: u32,
-// }
-
-// #[derive(Debug, Serialize, Deserialize, Default)]
-// pub struct MinecraftServerManifest {
-//   pub id: String,
-//   pub display_name: String,
-//   pub description: String,
-// }
+impl<S, F> IntoResponse for DMSResponse<S, F>
+where
+  S: Serialize,
+  F: Serialize,
+{
+  fn into_response(self) -> axum::response::Response {
+    match self {
+      Self::Success(data) => (
+        axum::http::StatusCode::OK,
+        Json(json!({
+          "status": "success",
+          "data": data
+        })),
+      ),
+      Self::Fail(err) => (
+        axum::http::StatusCode::BAD_REQUEST,
+        Json(json!({
+            "status": "error",
+            "description": err
+        })),
+      ),
+    }
+    .into_response()
+  }
+}

@@ -5,6 +5,7 @@ use std::collections::HashMap;
 // use std::io::prelude::*;
 // use std::path::Path;
 
+#[cfg(feature = "providers-modrinth")]
 use crate::providers::modrinth::{
   get_versions, resolve_dependencies, search_project, Client, Facet, IndexBy, Loader,
   ModrinthProjectVersion, ProjectQueryBuilder, ProjectType, VersionQueryBuilder,
@@ -13,7 +14,7 @@ use log::{debug, error, info};
 use serde::{Deserialize, Serialize};
 // use toml::{from_str, to_string};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 pub struct ModpackMetadata {
   pub name: String,
   pub version: String,
@@ -21,13 +22,14 @@ pub struct ModpackMetadata {
   pub author: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 pub struct LoaderMetadata {
+  #[cfg(feature = "providers-modrinth")]
   pub loader: Loader,
   pub version: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 pub struct ElytraManifest {
   pub modpack: ModpackMetadata,
   pub loader: LoaderMetadata,
@@ -35,6 +37,7 @@ pub struct ElytraManifest {
 }
 
 impl ElytraManifest {
+  #[cfg(feature = "providers-base")]
   pub async fn fetch_dependencies(
     &mut self,
     client: &Client,

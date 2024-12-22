@@ -1,5 +1,5 @@
 use std::env::var;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use anyhow::Context;
 use axum::routing::{get, post};
@@ -36,7 +36,9 @@ async fn main() -> anyhow::Result<()> {
   logger::init().context("while initializing logger")?;
 
   info!("Good morning!");
-  let server_state = Arc::new(state::DMSState::new(4).context("while initializing server")?);
+  let server_state = Arc::new(RwLock::new(
+    state::DMSState::new(4).context("while initializing server")?,
+  ));
 
   let ip_addr = var("DMS_HOST").unwrap_or(String::from("localhost:3030"));
 

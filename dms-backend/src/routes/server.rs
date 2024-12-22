@@ -2,84 +2,60 @@ use std::{
   fs::{create_dir, read_dir, OpenOptions},
   io::BufReader,
   path::{Path, PathBuf},
-  sync::Arc,
+  sync::{Arc, RwLock},
 };
 
 use crate::{
   errors::ServerError,
   state::DMSState,
-  types::{MinecraftServer, ServerBuildParams, WorkerMessage},
+  types::{DMSResponse, MinecraftServer, ServerBuildParams, WorkerMessage},
 };
 use axum::{extract::State, Json};
 use log::{debug, error, info, warn};
-use owo_colors::OwoColorize;
 
+#[axum::debug_handler]
 pub async fn get_servers(
-  State(state): State<Arc<DMSState>>,
-) -> Result<Json<Vec<crate::types::MinecraftServer>>, ServerError> {
-  info!("Querying servers");
+  State(state): State<Arc<RwLock<DMSState>>>,
+) -> DMSResponse<Vec<crate::types::MinecraftServer>, ServerError> {
+  {
+    debug!("Listing servers...");
+    let mut state = state
+      .write()
+      .expect("lock was poisoned before the servers could be listed");
 
-  debug!(
-    "Searching for servers within: {}",
-    state.data_dir.display().magenta()
-  );
-  let servers = if !state.data_dir.exists() {
-    warn!("Creating data dir");
-    create_dir(&state.data_dir)?;
+    state.list_servers();
+    debug!("{} servers listed", state.servers.len());
+  }
 
-    vec![]
-  } else {
-    read_dir(&state.data_dir)?
-      .map_while(|entry| match entry {
-        Err(err) => {
-          warn!("Error while fetching direntry: {}", err);
-          None
-        }
-        Ok(ent) => {
-          let path = ent.path();
-
-          info!("Found server: {}", path.display());
-
-          read_server(&path)
-            .map_err(|e| {
-              error!("An error occured while reading server data: {}", e);
-              warn!(
-                "The server on {} will not be listed",
-                path.display().magenta()
-              )
-            })
-            .ok()
-        }
-      })
-      .collect::<Vec<_>>()
-  };
-
-  info!("Found {} server(s) total", servers.len());
-
-  Ok(servers)
+  DMSResponse::Success(
+    state
+      .read()
+      .expect("lock was poisoned after servers were listed")
+      .servers
+      .clone(),
+  )
 }
 
-pub async fn new_server(State(state): State<Arc<DMSState>>, Json(server): Json<ServerBuildParams>) {
-  state
+pub async fn new_server(
+  State(state): State<Arc<RwLock<DMSState>>>,
+  Json(server): Json<ServerBuildParams>,
+) -> DMSResponse<String, String> {
+  let dispatcher = {
+    let state = state
+      .read()
+      .expect("lock was poisoned before build job was dispatched");
+
+    state.clone()
+  };
+
+  match dispatcher
     .dispatch_job(WorkerMessage::Build {
       context: state.clone(),
       params: server,
     })
-    .await;
-}
-
-fn read_server(path: &Path) -> Result<MinecraftServer, ServerError> {
-  let mut manifest_file = BufReader::new(
-    OpenOptions::new()
-      .read(true)
-      .write(false)
-      .open(path.join("server.json"))?,
-  );
-
-  let manifest = serde_json::from_reader(manifest_file)?;
-
-  Ok(MinecraftServer {
-    manifest,
-    ..Default::default()
-  })
+    .await
+  {
+    Some(wid) => DMSResponse::Success(format!("Dispatched job to worker #{wid}")),
+    None => DMSResponse::Fail("No workers are available at this moment".to_string()),
+  }
 }
