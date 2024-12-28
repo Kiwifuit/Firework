@@ -29,6 +29,8 @@ tokio = { version = "1.37.0", features = ["full"] }
 dbg_macro = "forbid"
 allow_attributes = "forbid"
 collection_is_never_read = "forbid"
+unwrap_used = "forbid"
+unused_result_ok = "warn"
 module_inception = "allow"
 to_string_trait_impl = "allow"
 

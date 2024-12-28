@@ -18,6 +18,7 @@
     "tab_spaces=2"
   ],
   "markdown.extension.list.indentationSize": "inherit",
+  "rust-analyzer.check.command": "check",
   "editor.tabSize": 2,
   "files.associations": {
     "**/*.css": "tailwindcss"
