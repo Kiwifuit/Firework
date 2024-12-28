@@ -19,9 +19,6 @@
   ],
   "markdown.extension.list.indentationSize": "inherit",
   "rust-analyzer.check.command": "clippy",
-  "rust-analyzer.check.extraArgs": [
-    "--all-features",
-  ],
   "editor.tabSize": 2,
   "files.associations": {
     "**/*.css": "tailwindcss"
