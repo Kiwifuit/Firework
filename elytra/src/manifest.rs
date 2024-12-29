@@ -86,7 +86,10 @@ impl ElytraManifest {
       debug!("Resolved {} to v{}", name, version.version_number);
 
       let resp = resolve_dependencies(client, &mut version, &version_query, |versions| {
-        versions.into_iter().next().unwrap()
+        versions
+          .into_iter()
+          .next()
+          .expect("expected at least 1 version")
       })
       .await;
 
