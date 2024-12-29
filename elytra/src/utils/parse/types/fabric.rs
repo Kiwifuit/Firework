@@ -79,7 +79,7 @@ impl FabricDependencyVersion {
     if s.len() < 2 {
       false
     } else {
-      s.chars().nth(1).unwrap() == '='
+      s.chars().nth(1).expect("expected at least 2 characters") == '='
     }
   }
 }
@@ -89,7 +89,7 @@ impl FromStr for FabricDependencyVersion {
 
   fn from_str(s: &str) -> Result<Self, Self::Err> {
     #[expect(clippy::wildcard_in_or_patterns)]
-    let mode = match s.chars().next().unwrap() {
+    let mode = match s.chars().next().expect("expected at least 1 character") {
       any_char if any_char.is_numeric() => FabricDependencyVersionMode::ExactMatch,
       '>' if Self::check_equals(s) => FabricDependencyVersionMode::GreaterThanEqual,
       '<' if Self::check_equals(s) => FabricDependencyVersionMode::LesserThanEqual,
@@ -108,6 +108,7 @@ impl FromStr for FabricDependencyVersion {
 }
 
 #[cfg(test)]
+#[expect(clippy::unwrap_used, reason = "THIS IS A TEST CASE")]
 mod tests {
   use super::*;
   use crate::utils::parse::unzip::grab_meta_file;

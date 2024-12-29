@@ -23,7 +23,7 @@ use reqwest::Client;
 ///
 /// #[tokio::main]
 /// async fn main() {
-///     let client = get_client().await.unwrap();
+///     let client = get_client().await.expect("expected client to be created");
 ///
 ///     let query = ProjectQueryBuilder::new()
 ///         .query("BotaniaCombat")
@@ -70,7 +70,12 @@ where
   }
 
   info!("Resolving dependnecies for mod {}", project.name);
-  for dependency in project.dependencies.as_mut().unwrap().iter_mut() {
+  for dependency in project
+    .dependencies
+    .as_mut()
+    .expect("expected dependencies to exist")
+    .iter_mut()
+  {
     let unresolved_dependency = match dependency {
       VersionDependency::Resolved(ver) => {
         Err(APIError::ResolvedDependency(ver.dependency.name.clone()))
@@ -87,13 +92,19 @@ where
     } else {
       warn!(
         "No version ID supplied for project {:?}",
-        unresolved_dependency.project_id.as_ref().unwrap()
+        unresolved_dependency
+          .project_id
+          .as_ref()
+          .expect("expected unresolved project id to exist!")
       );
       let version_list = get_versions(client, unresolved_dependency, version_params).await?;
 
       if version_list.len() == 1 {
         debug!("Only 1 version found, returning that");
-        version_list.into_iter().next().unwrap()
+        version_list
+          .into_iter()
+          .next()
+          .expect("expected at least 1 version")
       } else {
         debug!(
           "{} versions found with the matching criterion",
@@ -144,7 +155,7 @@ mod test {
 
   #[tokio::test]
   async fn check_dep_resolution() {
-    let client = get_client().await.unwrap();
+    let client = get_client().await.expect("expected client to be created");
 
     let query = ProjectQueryBuilder::new()
       .query("appleskin")
@@ -152,8 +163,13 @@ mod test {
       .index_by(IndexBy::Relevance)
       .build();
 
-    let res = search_project(&client, &query).await.unwrap();
-    let project = res.hits.first().unwrap();
+    let res = search_project(&client, &query)
+      .await
+      .expect("expected project query to succeed");
+    let project = res
+      .hits
+      .first()
+      .expect("expected at least 1 project hit, got none");
 
     let v_query = VersionQueryBuilder::new()
       .featured(true)
@@ -161,18 +177,25 @@ mod test {
       .loaders(vec![Loader::Fabric])
       .build();
 
-    let mut versions = get_versions(&client, &project, &v_query).await.unwrap();
-    let version = versions.get_mut(0).unwrap();
+    let mut versions = get_versions(&client, &project, &v_query)
+      .await
+      .expect("expected project versions query to succeed");
+    let version = versions
+      .get_mut(0)
+      .expect("expectev at least 1 version, got an empty list");
 
     let _err = resolve_dependencies(&client, version, &v_query, |versions| {
-      versions.into_iter().next().unwrap()
+      versions
+        .into_iter()
+        .next()
+        .expect("expected at least one version during dependency resolution, got none")
     })
     .await;
 
     assert!(version
       .dependencies
       .as_ref()
-      .unwrap()
+      .expect("Expected dependencies")
       .iter()
       .all(|dep| dep.is_resolved()));
   }

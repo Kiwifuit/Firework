@@ -17,7 +17,7 @@ use crate::providers::modrinth::types::result::SearchProjectResult;
 ///
 /// #[tokio::main]
 /// async fn main() {
-///     let client = get_client().await.unwrap();
+///     let client = get_client().await.expect("Expected modrinth api client to be created");
 ///
 ///     let query = ProjectQueryBuilder::new()
 ///         .query("gravestones")
@@ -46,8 +46,7 @@ pub async fn search_project(
     .get(format!("{}/v2/search", ENDPOINT))
     .query(params)
     .send()
-    .await
-    .unwrap()
+    .await?
     // .text()
     // .await?;
     .json()
@@ -71,7 +70,7 @@ pub async fn search_project(
 ///
 /// #[tokio::main]
 /// async fn main() {
-///     let client = get_client().await.unwrap();
+///     let client = get_client().await.expect("Expected modrinth api client to be created");
 ///
 ///     let query = ProjectQueryBuilder::new()
 ///         .query("kontraption")
@@ -104,8 +103,7 @@ pub async fn get_project(
     client
       .get(format!("{}/v2/project/{}", ENDPOINT, project.project_id))
       .send()
-      .await
-      .unwrap()
+      .await?
       .json()
       .await?,
   )
@@ -122,7 +120,9 @@ mod test {
 
   #[tokio::test]
   async fn check_search_projects() {
-    let client = get_client().await.unwrap();
+    let client = get_client()
+      .await
+      .expect("expected Modrinth api to be reachable");
 
     let query = ProjectQueryBuilder::new()
       .query("gravestones")
@@ -144,7 +144,9 @@ mod test {
 
   #[tokio::test]
   async fn check_get_project() {
-    let client = get_client().await.unwrap();
+    let client = get_client()
+      .await
+      .expect("Expected modrinth api client to be created");
 
     let query = ProjectQueryBuilder::new()
       .query("kontraption")
@@ -152,9 +154,14 @@ mod test {
       .index_by(IndexBy::Relevance)
       .build();
 
-    let res = search_project(&client, &query).await.unwrap();
+    let res = search_project(&client, &query)
+      .await
+      .expect("expected project query to succeed");
 
-    let res = res.hits.first().unwrap();
+    let res = res
+      .hits
+      .first()
+      .expect("expected at least 1 project hit, got none");
     assert_eq!(res.project_id, "5yJ5IDKm".into()); // https://modrinth.com/mod/kontraption
     assert_eq!(res.project_type, ProjectType::Mod);
 
@@ -162,7 +169,7 @@ mod test {
 
     assert!(project.is_ok());
 
-    let project = project.unwrap();
+    let project = project.expect("expected modrinth project");
 
     assert_eq!(project.id, "5yJ5IDKm".into());
     assert_eq!(project.project_type, ProjectType::Mod);

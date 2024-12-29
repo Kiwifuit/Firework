@@ -70,6 +70,7 @@ pub fn grab_meta_file<F: AsRef<Path>>(file: F) -> Result<ModMeta, UnzipError> {
 }
 
 #[cfg(test)]
+#[expect(clippy::unwrap_used, reason = "This is a test case")]
 mod tests {
   use super::*;
 

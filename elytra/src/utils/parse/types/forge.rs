@@ -100,9 +100,17 @@ impl<'de> Deserialize<'de> for ForgeModVersion {
       {
         match value {
           "*" => Ok(ForgeModVersion::Any),
-          version if version.chars().nth(0).unwrap().is_numeric() => Ok(
-            ForgeModVersion::SpecificVersion(version.parse().map_err(serde::de::Error::custom)?),
-          ),
+          version
+            if version
+              .chars()
+              .nth(0)
+              .expect("expected at least one character in version string")
+              .is_numeric() =>
+          {
+            Ok(ForgeModVersion::SpecificVersion(
+              version.parse().map_err(serde::de::Error::custom)?,
+            ))
+          }
           version => Ok(if version.starts_with('[') {
             ForgeModVersion::VersionRange(version.parse().map_err(serde::de::Error::custom)?)
           } else {
@@ -191,6 +199,10 @@ impl FromStr for ModVersionRange {
     let closing_loc = s.find(']').or(s.find(')'));
     let mut is_strict_version = false;
 
+    #[expect(
+      clippy::unwrap_used,
+      reason = "rigorously tested, pretty sure `unwrap` wont panic here"
+    )]
     if delimeter_loc.is_none() && closing_loc.is_none() {
       // we assume that we will find a comma somewhere
       return Err(ModVersionRangeParseError::Malformed(s.to_string()));
@@ -208,6 +220,7 @@ impl FromStr for ModVersionRange {
       return Err(ModVersionRangeParseError::Unclosed);
     }
 
+    #[expect(clippy::unwrap_used, reason = "by here `closing_loc` should exist")]
     let delimeter_loc = delimeter_loc.unwrap_or(closing_loc.unwrap());
     let strlen = s.len();
 
@@ -222,6 +235,10 @@ impl FromStr for ModVersionRange {
     } else if Self::is_infinity(&ver_max) {
       ModVersionRangeMode::GreaterThan
     } else {
+      #[expect(
+        clippy::unwrap_used,
+        reason = "idk how to put this in `expect` hell :/"
+      )]
       match s.chars().nth(closing_loc.unwrap()).unwrap() {
         ')' => ModVersionRangeMode::Between,
         ']' => ModVersionRangeMode::BetweenInclusive,
@@ -271,6 +288,7 @@ pub enum ModVersionRangeMode {
 }
 
 #[cfg(test)]
+#[expect(clippy::unwrap_used, reason = "THIS IS A TEST CASE")]
 mod tests {
   use super::*;
   use crate::utils::parse::unzip::grab_meta_file;

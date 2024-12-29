@@ -74,7 +74,10 @@ pub fn get_artifact<T: ToString>(
       artifact_data.base_url,
       artifact_data.group_id.replace('.', "/"),
       artifact_data.artifact_id,
-      artifact_data.version.clone().unwrap(),
+      artifact_data
+        .version
+        .clone()
+        .expect("expected version to be present"),
       artifact_name.to_string()
     );
 
@@ -88,13 +91,13 @@ mod tests {
   use super::*;
 
   #[tokio::test]
-  async fn test_get_versions() {
+  async fn versions() {
     let artifact = MavenArtifactBuilder::default()
       .with_base_url("https://maven.minecraftforge.net")
       .with_artifact_id("forge")
       .with_group_id("net.minecraftforge")
       .build()
-      .unwrap();
+      .expect("expected the artifact to be built");
 
     let versions = get_versions(&artifact).await;
 
@@ -102,15 +105,17 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_get_version() {
+  async fn version() {
     let mut artifact = MavenArtifactBuilder::default()
       .with_base_url("https://maven.minecraftforge.net")
       .with_artifact_id("forge")
       .with_group_id("net.minecraftforge")
       .build()
-      .unwrap();
+      .expect("expected the artifact to be built");
 
-    let versions_list = get_versions(&artifact).await.unwrap();
+    let versions_list = get_versions(&artifact)
+      .await
+      .expect("expected `get_versions` to work");
     let selected_version = versions_list.versioning.latest();
 
     artifact.set_version(selected_version);
@@ -122,7 +127,7 @@ mod tests {
     let artifact_url = get_artifact(&artifact, artifact_name);
 
     assert!(artifact_url.is_ok());
-    let artifact_url = artifact_url.unwrap();
+    let artifact_url = artifact_url.expect("Expected url to exist");
     assert_eq!(artifact_url, expected_artifact_url);
   }
 }

@@ -243,7 +243,7 @@ mod tests {
     let version = from_str(raw);
 
     assert!(version.is_ok());
-    let _version: HangarVersion = version.unwrap();
+    let _version: HangarVersion = version.expect("Expected hangar version to be serialized");
   }
 
   #[test]
@@ -847,6 +847,6 @@ mod tests {
     let versions = from_str(raw);
 
     assert!(versions.is_ok());
-    let _versions: HangarVersions = versions.unwrap();
+    let _versions: HangarVersions = versions.expect("Expected hangar version to be serialized");
   }
 }

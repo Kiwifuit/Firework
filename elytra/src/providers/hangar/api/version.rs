@@ -78,8 +78,13 @@ mod tests {
       .version("1.20.1")
       .build();
 
-    let projects = search_project(&client, &pquery).await.unwrap();
-    let project = projects.result.first().unwrap();
+    let projects = search_project(&client, &pquery)
+      .await
+      .expect("Expected project to exist");
+    let project = projects
+      .result
+      .first()
+      .expect("Expected `search_project` to have an entry");
 
     let vquery = VersionQueryBuilder::default()
       .platform(HangarPlatform::Paper)

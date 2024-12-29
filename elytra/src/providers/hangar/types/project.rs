@@ -217,7 +217,7 @@ mod tests {
     let project = from_str(raw);
     assert!(project.is_ok());
 
-    let _project: HangarProject = project.unwrap();
+    let _project: HangarProject = project.expect("expected hangar project to be serialized");
   }
 
   #[test]
@@ -2265,6 +2265,6 @@ mod tests {
 
     assert!(projects.is_ok());
 
-    let _projects: HangarProjects = projects.unwrap();
+    let _projects: HangarProjects = projects.expect("expected hangar project to be serialized");
   }
 }

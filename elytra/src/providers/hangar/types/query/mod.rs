@@ -41,6 +41,9 @@ mod tests {
     let pagination = GenericPagination::default();
     let res = to_string(&pagination);
 
-    assert_eq!(&res.unwrap(), "limit=25&offset=0");
+    assert_eq!(
+      &res.expect("expected pagination to be serialized"),
+      "limit=25&offset=0"
+    );
   }
 }

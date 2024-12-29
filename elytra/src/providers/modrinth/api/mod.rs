@@ -85,7 +85,7 @@ pub async fn get_client() -> Option<Client> {
     );
     return None;
   }
-  let (_labrinth_responding, client) = api_check.unwrap();
+  let (_labrinth_responding, client) = api_check.expect("expected Modrinth api to be reachable");
 
   Some(client)
 }
@@ -99,7 +99,7 @@ mod tests {
     let api_check = check_api().await;
 
     assert!(api_check.is_ok());
-    let (labrinth_responding, _client) = api_check.unwrap();
+    let (labrinth_responding, _client) = api_check.expect("expected Modrinth api to be reachable");
 
     assert!(labrinth_responding);
   }

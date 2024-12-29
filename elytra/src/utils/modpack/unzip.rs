@@ -73,7 +73,7 @@ where
     let mut infile = archive.by_index(i)?;
     let arcfile = infile
       .enclosed_name()
-      .unwrap()
+      .expect("expected archive name")
       .components()
       .enumerate()
       .filter_map(|(i, comp)| if i != 0 { Some(comp) } else { None })
@@ -90,11 +90,11 @@ where
       create_dir_all(outpath)?;
     } else {
       info!("Extracting {} to {}", infile.name(), outpath.display());
-      if !outpath.parent().unwrap().exists() {
-        create_dir_all(outpath.parent().unwrap())?;
+      if !outpath.parent().expect("expected parent dir").exists() {
+        create_dir_all(outpath.parent().expect("expected parent dir"))?;
       }
 
-      let mut outfile = File::create(outpath).unwrap();
+      let mut outfile = File::create(outpath).expect("expected file to be created");
       std::io::copy(&mut infile, &mut outfile)?;
       debug!("Extracted {}!", arcfile.display());
     }

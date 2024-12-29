@@ -19,7 +19,8 @@ use crate::providers::modrinth::types::ModrinthProjectMeta;
 ///
 /// #[tokio::main]
 /// async fn main() {
-///     let client = get_client().await.unwrap();
+///     let client = get_client().await
+///         .expect("expected Modrinth api to be reachable");
 ///
 ///     let query = ProjectQueryBuilder::new()
 ///         .query("kontraption")
@@ -59,12 +60,13 @@ where
     .get(format!(
       "{}/v2/project/{}/version",
       ENDPOINT,
-      project.project_id().unwrap()
+      project
+        .project_id()
+        .expect("expected project id or slug to exist")
     ))
     .query(params)
     .send()
-    .await
-    .unwrap()
+    .await?
     // .text()
     .json::<Vec<ModrinthProjectVersion>>()
     .await?;
@@ -80,18 +82,20 @@ where
   M: ModrinthProjectMeta,
   <M as ModrinthProjectMeta>::Id: Display + Debug,
 {
-  info!("Searching for version: {:?}", project.version_id().unwrap());
+  info!(
+    "Searching for version: {:?}",
+    project.version_id().expect("expected version id to exit")
+  );
 
   let resp: ModrinthProjectVersion = client
     // TODO: ADD ERROR
     .get(format!(
       "{}/v2/version/{}",
       ENDPOINT,
-      project.version_id().unwrap()
+      project.version_id().expect("expected version id to exit")
     ))
     .send()
-    .await
-    .unwrap()
+    .await?
     .json()
     .await?;
 
@@ -107,7 +111,9 @@ mod test {
 
   #[tokio::test]
   async fn check_get_versions() {
-    let client = get_client().await.unwrap();
+    let client = get_client()
+      .await
+      .expect("expected Modrinth api to be reachable");
 
     let query = ProjectQueryBuilder::new()
       .query("kontraption")
@@ -115,8 +121,14 @@ mod test {
       .index_by(IndexBy::Relevance)
       .build();
 
-    let res = search_project(&client, &query).await.unwrap();
-    let project = res.hits.first().unwrap();
+    let res = search_project(&client, &query)
+      .await
+      .expect("expected project query to succeed");
+
+    let project = res
+      .hits
+      .first()
+      .expect("expected at least 1 project hit, got none");
 
     let v_query = VersionQueryBuilder::new()
       .featured(true)
@@ -127,6 +139,8 @@ mod test {
     let version = get_versions(&client, &project, &v_query).await;
 
     assert!(version.is_ok());
-    assert!(!version.unwrap().is_empty());
+    assert!(!version
+      .expect("expected version list to be not empty")
+      .is_empty());
   }
 }
