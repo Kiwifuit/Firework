@@ -1,301 +1,239 @@
+use std::ffi::OsString;
+// use std::io::{BufWriter, Write};
+use std::path::{Path, PathBuf};
+use std::process::Stdio;
+use std::sync::Arc;
+
 use anyhow::Context;
 use futures_util::StreamExt;
-use log::{debug, error, info, warn};
-use mar::types::MavenArtifact;
-use mar::{get_artifact, get_versions};
+use log::{debug, error, info};
+use mar::{get_artifact, get_versions, types::MavenArtifact};
 use reqwest::get;
-use std::borrow::{Borrow, Cow};
-use std::ffi::OsStr;
-use std::fmt::Display;
-use std::fs::{create_dir, File};
-use std::io::{BufRead, BufReader, BufWriter, Write};
-use std::path::Path;
-use std::process::{Command, Stdio};
-use std::str::FromStr;
-use std::sync::mpsc::Sender;
-use std::sync::Arc;
 use thiserror::Error;
+use tokio::fs::File;
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader, BufWriter};
+use tokio::process::Command;
 
-mod post;
-pub use post::agree_eula;
+pub trait ServerParameters {
+  /// The display name of the server
+  fn name(&self) -> &str;
 
-macro_rules! args {
-    ($ ( $arg:expr ),+ $(,)?) => {
-        vec![$($arg.as_ref(), )+]
-    }
-}
+  /// The version of Minecraft to use
+  fn version(&self) -> &str;
 
-#[derive(Clone, Copy)]
-pub enum ServerSoftware {
-  Forge,
-  Neoforge,
-  Fabric,
-  Quilt,
-  Glowstone,
+  /// The directory where the server will be built.
+  ///
+  /// This directory should be empty and should exist
+  /// as `build_server` will not create this directory
+  fn output_dir(&self) -> &Path;
+
+  /// The args to the `run.sh` file.
+  /// The shebang is already implied for this method
+  fn run_args(&self) -> String;
+
+  /// The args to be passed through the JVM.
+  ///
+  /// This method already provides the best arguments
+  /// according to [this Reddit Post](https://www.reddit.com/r/feedthebeast/comments/5jhuk9/modded_mc_and_memory_usage_a_history_with_a/)
+  /// on r/feedthebeast
+  fn jvm_args(&self) -> &str {
+    "-XX:+UseG1GC -Xmx4G -Xms4G -Dsun.rmi.dgc.server.gcInterval=2147483646 -XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=20 -XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=50 -XX:G1HeapRegionSize=32M"
+  }
+
+  /// Name of the installer / server software
+  fn installer_name(&self) -> &str;
+
+  /// The arguments to use when running the
+  /// server installer
+  fn installer_args(&self) -> Vec<OsString>;
+
+  /// Name of the artifact to download
+  fn artifact_name(&self) -> String;
+
+  /// Artifact version. By default
+  /// this returns the `.version()`
+  fn artifact_version(&self) -> &str {
+    self.version()
+  }
+
+  /// Artifact download directory.
+  /// By default this returns `.output_dir()`
+  fn artifact_dir(&self) -> &Path {
+    self.output_dir()
+  }
 }
 
 #[derive(Debug, Error)]
-pub enum ServerInstallError {
-  #[error("error while trying to fetch artifact data: {0}")]
+pub enum DenjiError {
+  #[error("while downloading artifact: {0}")]
   Artifact(#[from] mar::RepositoryError),
-  #[error("version for artifact not found: {0}")]
-  Version(String),
-  #[error("net error: {0}")]
-  Net(#[from] reqwest::Error),
-  #[error("i/o error: {0}")]
+  #[error("no artifact version was found")]
+  NoVersion,
+  #[error("I/O error: {0}")]
   Io(#[from] std::io::Error),
-  #[error("{0}")]
-  Contextual(#[from] anyhow::Error),
+  #[error("http error:{0}")]
+  Http(#[from] reqwest::Error),
 
-  #[error("Installer exited with non-zero code")]
-  Installer,
+  #[error("installer returned code {0}")]
+  Installer(i32),
+
+  #[error("while writing run script: {0}")]
+  WriteScript(anyhow::Error),
+
+  #[error("while writing JVM args: {0}")]
+  JvmArgs(anyhow::Error),
 }
 
-pub struct MinecraftServer<S, I> {
-  server: S,
-  server_version: Arc<str>,
-  game_version: Arc<str>,
-  root_dir: I,
-}
+pub async fn build_server<P, F>(params: P, on_output_line: F) -> Result<(), DenjiError>
+where
+  P: ServerParameters + Into<MavenArtifact> + Clone,
+  F: Fn(String),
+{
+  info!(
+    "Downloading installer for {} v{} (for Minecraft {})",
+    params.installer_name(),
+    params.artifact_version(),
+    params.version()
+  );
 
-impl<I: AsRef<Path>, S: ServerSoftwareMeta> MinecraftServer<S, I> {
-  pub fn new<V: ToString>(server: S, server_version: V, game_version: V, root_dir: I) -> Self {
-    Self {
-      server,
-      server_version: server_version.to_string().into(),
-      game_version: game_version.to_string().into(),
-      root_dir,
-    }
-  }
+  let jar_path = download_installer(
+    params.clone(),
+    &params.artifact_name(),
+    &params.installer_name().to_lowercase(),
+    params.artifact_dir(),
+    params.artifact_version(),
+  )
+  .await?;
 
-  pub async fn build_server<T>(&self, tx: Sender<T>) -> Result<(), ServerInstallError>
-  where
-    T: From<String>,
+  let mut command = Command::new("java");
+  let command = command
+    .current_dir(params.output_dir())
+    .arg("-jar")
+    .arg(jar_path)
+    .args(params.installer_args())
+    .stdout(Stdio::piped())
+    .kill_on_drop(true);
+
+  let mut installer_command = command.spawn()?;
   {
-    info!(
-      "installing {} v{} for minecraft {} to {}",
-      self.server,
-      self.server_version,
-      self.game_version,
-      self.root_dir.as_ref().display()
+    let stdout = BufReader::new(
+      installer_command
+        .stdout
+        .as_mut()
+        .expect("expected the installer's stdout to exist"),
     );
+    let mut lines = stdout.lines();
 
-    self.download_server().await?;
-    info!("installing server");
-
-    let mut installer = Command::new("java");
-    let installer = installer
-      .args(vec![
-        "-jar",
-        self
-          .root_dir
-          .as_ref()
-          .join("installer.jar")
-          .to_str()
-          .unwrap(),
-      ])
-      .args(
-        self
-          .server
-          .installer_args(self.root_dir.as_ref(), &self.game_version),
-      )
-      .stdout(Stdio::piped());
-
-    debug!("installing with args: {:?}", installer.get_args());
-
-    if !self.root_dir.as_ref().exists() {
-      error!(
-        "{} does not exist! creating dir",
-        self.root_dir.as_ref().display()
-      );
-      create_dir(&self.root_dir)?;
+    while let Some(line) = lines.next_line().await? {
+      on_output_line(line);
     }
-
-    let mut installer = installer.spawn()?;
-    {
-      let stdout = BufReader::new(installer.stdout.as_mut().unwrap());
-
-      for line in stdout.lines() {
-        tx.send(T::from(line?)).expect("Expected tx to be sendable");
-        // if let Err(e) = tx.send(T::from(line?)) {
-        //   warn!("While sending line: {}", e);
-        // }
-      }
-    }
-
-    let stat = installer.wait()?;
-    if !stat.success() {
-      error!("installer exited with code {}", stat);
-      return Err(ServerInstallError::Installer);
-    }
-
-    info!("installer exited with code {}", stat);
-    info!("running post-install utilities");
-
-    post::add_run_sh(&self.root_dir, self.server)?;
-    post::write_user_jvm_args(&self.root_dir, "-Xms2G -Xmx8G -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true")
-            .context("while writing user_jvm_args.txt")?;
-    Ok(())
   }
 
-  async fn download_server(&self) -> Result<(), ServerInstallError> {
-    let mut artifact: MavenArtifact = self.server.into();
-    let versions = get_versions(&artifact).await?;
-
-    if !versions
-      .versioning
-      .versions()
-      .contains(&self.server_version.clone())
-    {
-      error!("unable to find version {}", self.server_version);
-
-      return Err(ServerInstallError::Version(
-        self.server.artifact_name(self.server_version.clone()),
-      ));
-    }
-
-    info!("version {} resolved!", self.server_version);
-    artifact.set_version(self.server_version.clone());
-
-    let artifact_url = get_artifact(&artifact, self.server.artifact_name(&self.server_version))?;
-
-    info!("resolved artifact to {:?}", artifact_url);
-    info!("starting download...");
-    let mut file = BufWriter::new(
-      File::create_new(self.root_dir.as_ref().join("installer.jar"))
-        .context("while creating file")?,
-    );
-    let mut stream = get(artifact_url).await?.bytes_stream();
-
-    let mut total = 0;
-    while let Some(chunk) = stream.next().await {
-      total += file.write(&chunk?).context("while downloading file")?;
-    }
-
-    info!("finished download (downloaded {} bytes)", total);
-    Ok(())
-  }
-}
-
-pub trait ServerSoftwareMeta: Display + Into<MavenArtifact> + Copy {
-  fn artifact_name<V: Display>(&self, version: V) -> String;
-  fn installer_args<'a, I>(&self, installer_dir: &'a I, game_version: &'a str) -> Vec<&'a OsStr>
-  where
-    I: AsRef<OsStr> + ?Sized + 'a;
-  fn run_sh_content(&self) -> Vec<String>;
-}
-
-impl FromStr for ServerSoftware {
-  type Err = ();
+  let stat = installer_command.wait().await?;
 
   #[expect(
-    clippy::wildcard_in_or_patterns,
-    reason = "We are trying to provide a default variant"
+    clippy::unwrap_used,
+    reason = "`.unwrap` should be safe here, since we aren't killing the child proc"
   )]
-  // TODO: This could be a bit dangerous
-  //       Probably should return an error in...
-  fn from_str(s: &str) -> Result<Self, Self::Err> {
-    Ok(match s {
-      "forge" => Self::Forge,
-      "neoforge" => Self::Neoforge,
-      "fabric" => Self::Fabric,
-      "quilt" => Self::Quilt,
-      "glowstone" | _ => Self::Glowstone, // ...here
-    })
+  if !stat.success() {
+    error!(
+      "The server installer returned code: {}",
+      stat.code().unwrap()
+    );
+
+    return Err(DenjiError::Installer(stat.code().unwrap()));
   }
+
+  info!("Writing run script");
+  write_run_script(&params)
+    .await
+    .map_err(DenjiError::WriteScript)?;
+
+  info!("Writing JVM arguments");
+  write_jvm_args(&params).await.map_err(DenjiError::JvmArgs)?;
+
+  Ok(())
 }
 
-impl<'a> From<Cow<'a, str>> for ServerSoftware {
-  fn from(value: Cow<'a, str>) -> Self {
-    let a: &str = value.borrow();
-    a.parse().unwrap()
-  }
+async fn write_run_script<P: ServerParameters>(params: &P) -> anyhow::Result<()> {
+  #[cfg(unix)]
+  let file_name = "run.sh";
+
+  #[cfg(windows)]
+  let file_name = "run.bat";
+
+  // TODO: Buffered writers?
+  let mut file = File::create(params.output_dir().join(file_name))
+    .await
+    .context(format!("while opening {} script", file_name))?;
+
+  #[cfg(unix)]
+  file.write_all(b"#!/usr/bin/env sh\n").await?;
+  file.write_all(params.run_args().as_bytes()).await?;
+
+  Ok(())
 }
 
-impl Display for ServerSoftware {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    write!(
-      f,
-      "{}",
-      match self {
-        Self::Forge => "forge",
-        Self::Neoforge => "neoforge",
-        Self::Fabric => "fabric",
-        Self::Quilt => "quilt",
-        Self::Glowstone => "glowstone",
-      }
-    )
-  }
+async fn write_jvm_args<P: ServerParameters>(params: &P) -> anyhow::Result<()> {
+  let mut file = File::create(params.output_dir().join("user_jvm_args.txt"))
+    .await
+    .context("while opening JVM args file")?;
+
+  file.write_all(params.jvm_args().as_bytes()).await?;
+
+  Ok(())
 }
 
-impl From<ServerSoftware> for MavenArtifact {
-  fn from(value: ServerSoftware) -> Self {
-    match value {
-      ServerSoftware::Forge => "maven.minecraftforge.net:net.minecraftforge:forge:",
-      ServerSoftware::Neoforge => "maven.neoforged.net/releases:net.neoforged:neoforge:",
-      ServerSoftware::Fabric => "maven.fabricmc.net:net.fabricmc:fabric-installer:",
-      ServerSoftware::Quilt => "maven.quiltmc.org/repository/release:org.quiltm:quilt-installer:",
-      ServerSoftware::Glowstone => {
-        "repo.glowstone.net/content/repositories/snapshots:net.glowstone:glowstone:"
-      }
-    }
-    .parse()
-    .unwrap()
+async fn download_installer<A>(
+  artifact: A,
+  artifact_name: &str,
+  installer: &str,
+  out_dir: &Path,
+  version: &str,
+) -> Result<PathBuf, DenjiError>
+where
+  A: Into<MavenArtifact>,
+{
+  let mut artifact = artifact.into();
+
+  resolve_version(&mut artifact, version).await?;
+  info!("Downloading artifact");
+
+  let artifact_url = get_artifact(&artifact, artifact_name)?;
+  let artifact_path = out_dir.join(format!("installer-{}-{}.jar", installer, version));
+  debug!("Downloading artifact to: {}", artifact_path.display());
+
+  let mut file = BufWriter::new(File::create_new(&artifact_path).await?);
+  let mut stream = get(artifact_url).await?.bytes_stream();
+
+  let mut downloaded_bytes = 0;
+  while let Some(chunk) = stream.next().await {
+    downloaded_bytes += file.write(&chunk?).await?;
   }
+
+  info!("Downloaded {} bytes", downloaded_bytes);
+
+  Ok(artifact_path)
 }
 
-impl ServerSoftwareMeta for ServerSoftware {
-  fn artifact_name<V: Display>(&self, version: V) -> String {
-    match self {
-      Self::Forge => format!("forge-{}-installer.jar", version),
-      Self::Neoforge => format!("neoforge-{}-installer.jar", version),
-      Self::Quilt => format!("quilt-installer-{}.jar", version),
-      Self::Fabric => format!("fabric-installer-{}.jar", version),
-      Self::Glowstone => todo!(), // TODO: Fix this
-    }
+async fn resolve_version(artifact: &mut MavenArtifact, version: &str) -> Result<(), DenjiError> {
+  let version: Arc<str> = Arc::from(version);
+  let versions = get_versions(artifact).await?;
+  let artifact_version = versions
+    .versioning
+    .versions()
+    .iter()
+    .find(|artifact_version| Arc::clone(artifact_version) == version.clone())
+    .cloned();
+
+  if artifact_version.is_none() {
+    error!("Failed to resolve artifact version {:?}", version);
+    return Err(DenjiError::NoVersion);
   }
 
-  fn installer_args<'a, I>(&self, install_dir: &'a I, game_version: &'a str) -> Vec<&'a OsStr>
-  where
-    I: AsRef<OsStr> + ?Sized + 'a,
-  {
-    match self {
-      Self::Forge => args!["--installServer", install_dir],
-      Self::Neoforge => args!["--installServer", install_dir],
-      Self::Quilt => args![
-        "install",
-        "server",
-        game_version,
-        "--install-dir",
-        install_dir,
-        "--create-scripts",
-        "--download-server"
-      ],
-      Self::Fabric => args![
-        "server",
-        "-dir",
-        install_dir,
-        "-mcversion",
-        game_version,
-        "-downloadMinecraft",
-      ],
-      Self::Glowstone => todo!(), // TODO: Also this
-    }
-  }
+  info!("Resolved artifact successfully!");
+  let artifact_version = artifact_version.expect("expected artifact to be resolved at this point");
+  artifact.set_version(artifact_version);
 
-  fn run_sh_content(&self) -> Vec<String> {
-    match self {
-      ServerSoftware::Fabric | ServerSoftware::Quilt => vec![
-        "#!/usr/bin/env sh".to_string(),
-        format!(
-          "java -jar {}-server-launch.jar @user_jvm_args.txt \"$@\"",
-          self.to_string()
-        ),
-      ],
-      _ => vec![
-        "#!/usr/bin/env sh".to_string(),
-        "java -jar server.jar @user_jvm_args.txt \"$@\"".to_string(),
-      ],
-    }
-  }
+  Ok(())
 }

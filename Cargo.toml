@@ -23,7 +23,7 @@ sha1_smol = { version = "1.0.0", features = ["serde"] }
 serde = { version = "1.0.197", features = ["derive", "rc"] }
 zip = { version = "2.2.0", default-features = false, features = ["deflate"] }
 reqwest = { version = "0.12.7", features = ["json", "stream"] }
-tokio = { version = "1.37.0", features = ["full"] }
+tokio = { version = "1.37.0", features = ["full"] }                           # default-features = false
 
 [workspace.lints.clippy]
 dbg_macro = "forbid"
