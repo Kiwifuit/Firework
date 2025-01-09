@@ -79,6 +79,7 @@ impl MavenArtifact {
   }
 }
 
+#[cfg(feature = "all")]
 #[derive(Debug, Error)]
 pub enum MavenArtifactBuildError {
   #[error("missing field: base_url. run with_base_url to fix")]
