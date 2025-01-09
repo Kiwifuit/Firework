@@ -1,4 +1,6 @@
+#[cfg(feature = "manifest")]
 pub mod errors;
+#[cfg(feature = "manifest")]
 pub mod manifest;
 
 #[cfg(feature = "plugin")]

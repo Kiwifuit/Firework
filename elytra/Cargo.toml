@@ -4,10 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-serde.workspace = true
-thiserror.workspace = true
-log.workspace = true
-tokio.workspace = true
+serde = { workspace = true, optional = true }
+thiserror = { workspace = true, optional = true }
+log = { workspace = true, optional = true }
 
 reqwest = { workspace = true, optional = true }
 zip = { workspace = true, optional = true }
@@ -21,7 +20,7 @@ libloading = { version = "0.8.6", optional = true }
 mar = { path = "../mar", optional = true }
 
 [features]
-default = ["providers-modrinth"]
+default = ["providers-modrinth", "manifest"]
 
 providers-base = ["dep:reqwest"]
 providers-hangar = ["providers-base", "dep:bitflags", "dep:chrono"]
@@ -32,7 +31,8 @@ utils-modpack = ["utils-base"]
 utils-mod = ["utils-base"]
 utils-plugin = ["dep:libloading"]
 
-plugin = ["mar"]
+manifest = ["dep:serde", "dep:log", "dep:thiserror"]
+plugin = ["mar/type-maven-artifact"]
 
 [lints]
 workspace = true
@@ -42,3 +42,4 @@ env_logger = "0.11.5"
 toml = "0.8.19"
 serde_urlencoded = "0.7.1"
 serde_json.workspace = true
+tokio.workspace = true
