@@ -4,6 +4,7 @@ use thiserror::Error;
 mod deserialize;
 pub use deserialize::*;
 
+#[cfg(feature = "all")]
 #[derive(Default)]
 pub struct MavenArtifactBuilder<T> {
   pub(crate) base_url: Option<T>,
@@ -20,6 +21,7 @@ pub struct MavenArtifact {
   pub(crate) version: Option<String>,
 }
 
+#[cfg(feature = "all")]
 #[derive(Debug, Error)]
 pub enum MavenArtifactParseError {
   #[error("input string is malformed: expected 3 semicolons, got {0}")]
@@ -30,6 +32,7 @@ pub enum MavenArtifactParseError {
   Malformed,
 }
 
+#[cfg(feature = "all")]
 impl FromStr for MavenArtifact {
   type Err = MavenArtifactParseError;
 
@@ -85,6 +88,7 @@ pub enum MavenArtifactBuildError {
   ArtifactID,
 }
 
+#[cfg(feature = "all")]
 impl<T: ToString> MavenArtifactBuilder<T> {
   pub fn with_base_url(mut self, base_url: T) -> Self {
     self.base_url = Some(base_url);
