@@ -28,6 +28,7 @@ providers-modrinth = ["providers-base"]
 utils-base = ["dep:zip"]
 utils-modpack = ["utils-base"]
 utils-mod = ["utils-base"]
+utils-plugin = []
 
 plugin = []
 
