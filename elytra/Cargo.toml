@@ -17,7 +17,7 @@ chrono = { version = "0.4.38", default-features = false, features = [
 ], optional = true }
 libloading = { version = "0.8.6", optional = true }
 
-mar = { path = "../mar", optional = true }
+mar = { path = "../mar", default-features = false, optional = true }
 
 [features]
 default = ["providers-modrinth", "manifest"]
