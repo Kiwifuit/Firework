@@ -29,7 +29,7 @@ providers-modrinth = ["providers-base"]
 utils-base = ["dep:zip"]
 utils-modpack = ["utils-base"]
 utils-mod = ["utils-base"]
-utils-plugin = ["dep:libloading"]
+utils-plugin = ["dep:libloading", "dep:thiserror", "plugin"]
 
 manifest = ["dep:serde", "dep:log", "dep:thiserror"]
 plugin = ["mar/type-maven-artifact"]
