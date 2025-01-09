@@ -29,6 +29,8 @@ utils-base = ["dep:zip"]
 utils-modpack = ["utils-base"]
 utils-mod = ["utils-base"]
 
+plugin = []
+
 [lints]
 workspace = true
 
