@@ -1,4 +1,5 @@
 use std::str::FromStr;
+#[cfg(feature = "all")]
 use thiserror::Error;
 
 mod deserialize;
