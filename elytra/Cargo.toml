@@ -16,6 +16,7 @@ chrono = { version = "0.4.38", default-features = false, features = [
   "std",
   "serde",
 ], optional = true }
+libloading = { version = "0.8.6", optional = true }
 
 
 [features]
@@ -28,7 +29,7 @@ providers-modrinth = ["providers-base"]
 utils-base = ["dep:zip"]
 utils-modpack = ["utils-base"]
 utils-mod = ["utils-base"]
-utils-plugin = []
+utils-plugin = ["dep:libloading"]
 
 plugin = []
 
