@@ -74,7 +74,7 @@ pub enum DenjiError {
   #[error("http error:{0}")]
   Http(#[from] reqwest::Error),
 
-  #[error("installer returned code {0}")]
+  #[error("Installer returned code {0}")]
   Installer(i32),
 
   #[error("while writing run script: {0}")]

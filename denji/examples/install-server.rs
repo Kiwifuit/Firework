@@ -10,6 +10,7 @@ use std::fs::create_dir;
 use std::path::PathBuf;
 use std::sync::mpsc::channel;
 // use std::sync::Arc;
+use std::env::consts;
 use std::thread::spawn;
 // use std::time::Duration;
 
@@ -89,7 +90,11 @@ impl ServerParameters for ForgeServer {
   }
 
   fn run_args(&self) -> String {
-    format!("java -jar libraries/net/minecraftforge/forge/{0}/forge-{0}-server.jar @usr_jvm_args.txt nogui \"$@\"", self.artifact_version())
+    format!(
+      "java @user_jvm_args.txt @libraries/net/minecraftforge/forge/{}/{}_args.txt nogui \"$@\"",
+      self.artifact_version(),
+      consts::FAMILY
+    )
   }
 }
 
