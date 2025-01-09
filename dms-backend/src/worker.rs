@@ -56,33 +56,33 @@ async fn build_server(
     "Building server {} for {} {}",
     params.name, params.server, params.server_version
   );
-  let (tx, rx) = std::sync::mpsc::channel::<String>();
+  //   let (tx, rx) = std::sync::mpsc::channel::<String>();
 
-  info!("Spawning read thread");
-  std::thread::spawn(move || loop {
-    match rx.recv_timeout(std::time::Duration::from_secs(90)) {
-      Ok(line) => info!("{}", line),
-      Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
-        error!("Timeout reached while awaiting message");
-      }
-      Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => break,
-    }
-  });
+  //   info!("Spawning read thread");
+  //   std::thread::spawn(move || loop {
+  //     match rx.recv_timeout(std::time::Duration::from_secs(90)) {
+  //       Ok(line) => info!("{}", line),
+  //       Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
+  //         error!("Timeout reached while awaiting message");
+  //       }
+  //       Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => break,
+  //     }
+  //   });
 
-  let server_build = denji::MinecraftServer::new(
-    params.server.parse::<denji::ServerSoftware>().unwrap(),
-    &params.server_version,
-    &params.server_version,
-    "target/servers/dummy/",
-  );
+  //   let server_build = denji::MinecraftServer::new(
+  //     params.server.parse::<denji::ServerSoftware>().unwrap(),
+  //     &params.server_version,
+  //     &params.server_version,
+  //     "target/servers/dummy/",
+  //   );
 
-  tokio::task::spawn(async move {
-    if let Err(e) = server_build.build_server(tx).await {
-      error!("An error occurred while building the server: {:?}", e);
-    }
-  })
-  .await
-  .expect("expected this task to not return any errors");
+  //   tokio::task::spawn(async move {
+  //     if let Err(e) = server_build.build_server(tx).await {
+  //       error!("An error occurred while building the server: {:?}", e);
+  //     }
+  //   })
+  //   .await
+  //   .expect("expected this task to not return any errors");
 
   //   context.servers.push(MinecraftServer);
 
