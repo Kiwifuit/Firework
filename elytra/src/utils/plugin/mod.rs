@@ -1,7 +1,7 @@
 use std::ffi::OsStr;
 
 use libloading::{Library, Symbol};
-use log::info;
+use log::{debug, info};
 use thiserror::Error;
 
 use crate::plugin::ServerProvider;
@@ -31,11 +31,14 @@ impl Drop for Plugin {
 
 impl Plugin {
   pub fn load<P: AsRef<OsStr>>(path: P) -> Result<Self, PluginError> {
-    let plugin = unsafe { Library::new(path) }?;
+    debug!("Loading library {}", path.as_ref().to_string_lossy());
+    let plugin = unsafe { Library::new(path.as_ref()) }?;
+    debug!("Loading init symbol");
     let plugin_init: Symbol<PluginInit> = unsafe { plugin.get(b"init") }?;
 
-    Ok(Self {
-      plugin: plugin_init(),
-    })
+    info!("Initializing plugin: {}", path.as_ref().to_string_lossy());
+    let plugin = plugin_init();
+
+    Ok(Self { plugin })
   }
 }
