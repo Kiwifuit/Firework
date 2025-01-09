@@ -453,6 +453,7 @@ dependencies = [
  "env_logger",
  "libloading",
  "log",
+ "mar",
  "reqwest",
  "serde",
  "serde_json",
