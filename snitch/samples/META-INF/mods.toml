@@ -1,0 +1,9 @@
+modLoader = "java"
+loaderVersion = "[1,)"
+license = "All Rights Reserved"
+
+[[mods]]
+modId = "examplemod"
+version = "1.0.0"
+displayName = "Example Mod"
+description = "A brief description of my mod."
