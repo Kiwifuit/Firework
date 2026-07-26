@@ -1,5 +1,5 @@
 use super::{APIError, ENDPOINT};
-use log::info;
+use log::{debug, info};
 use reqwest::Client;
 
 use crate::types::project::ModrinthProject;
@@ -46,12 +46,17 @@ pub async fn search_project(
         .get(format!("{}/v2/search", ENDPOINT))
         .query(params)
         .send()
-        .await
-        .unwrap()
+        .await?
         .json()
         .await?;
 
-    assert_eq!(resp.hits.len(), params.limit as usize);
+    if resp.hits.len() != params.limit as usize {
+        debug!(
+            "Requested {} items, got {} instead!",
+            params.limit,
+            resp.hits.len()
+        );
+    }
     Ok(resp)
 }
 
