@@ -8,7 +8,7 @@ use crate::types::query::VersionQuery;
 use crate::types::version::ModrinthProjectVersion;
 use crate::types::ModrinthProjectMeta;
 
-#[allow(private_bounds)]
+#[expect(private_bounds)]
 /// Lists versions of `project`
 /// ## Usage
 /// ```
@@ -54,7 +54,6 @@ where
     info!("Searching for versions with params: {:?}", params);
 
     let resp: Vec<ModrinthProjectVersion> = client
-        // TODO: ADD ERROR
         .get(format!(
             "{}/v2/project/{}/version",
             ENDPOINT,
@@ -62,8 +61,7 @@ where
         ))
         .query(params)
         .send()
-        .await
-        .unwrap()
+        .await?
         // .text()
         .json()
         .await?;
@@ -82,15 +80,13 @@ where
     info!("Searching for version: {:?}", project.version_id().unwrap());
 
     let resp: ModrinthProjectVersion = client
-        // TODO: ADD ERROR
         .get(format!(
             "{}/v2/version/{}",
             ENDPOINT,
             project.version_id().unwrap()
         ))
         .send()
-        .await
-        .unwrap()
+        .await?
         .json()
         .await?;
 

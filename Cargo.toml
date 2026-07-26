@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["denji", "hangar", "mar", "modparser", "modrinth", "mparse"]
+members = ["denji", "hangar", "mar", "haul", "modrinth", "snitch"]
 
 [workspace.dependencies]
 log = "0.4.21"

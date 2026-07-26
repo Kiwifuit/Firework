@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "your_mod_id",
+  "version": "1.0.0",
+  "entrypoints": {
+    "main": [
+      "com.yourname.mod.YourModClass"
+    ]
+  }
+}

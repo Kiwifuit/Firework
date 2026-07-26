@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use std::str::FromStr;
 
+use crate::types::DependencyVersioningError;
+
 #[derive(Debug, Deserialize)]
 pub struct FabricMod {
     #[serde(rename = "schemaVersion")]
@@ -79,17 +81,21 @@ impl FabricDependencyVersion {
         if s.len() < 2 {
             false
         } else {
-            s.chars().nth(1).unwrap() == '='
+            s.chars().nth(1).unwrap_or_default() == '='
         }
     }
 }
 
 impl FromStr for FabricDependencyVersion {
-    type Err = String;
+    type Err = DependencyVersioningError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        #[allow(clippy::wildcard_in_or_patterns)]
-        let mode = match s.chars().next().unwrap() {
+        #[expect(clippy::wildcard_in_or_patterns)]
+        let mode = match s
+            .chars()
+            .next()
+            .ok_or(DependencyVersioningError::CantDetermineMode)?
+        {
             any_char if any_char.is_numeric() => FabricDependencyVersionMode::ExactMatch,
             '>' if Self::check_equals(s) => FabricDependencyVersionMode::GreaterThanEqual,
             '<' if Self::check_equals(s) => FabricDependencyVersionMode::LesserThanEqual,

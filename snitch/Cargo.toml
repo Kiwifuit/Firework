@@ -1,5 +1,5 @@
 [package]
-name = "modparser"
+name = "snitch"
 version = "1.0.0"
 edition = "2021"
 description = "Library to parse minecraft mod (*.jar) files"
