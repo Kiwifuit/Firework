@@ -8,7 +8,7 @@ use crate::types::query::VersionQuery;
 use crate::types::version::ModrinthProjectVersion;
 use crate::types::ModrinthProjectMeta;
 
-#[allow(private_bounds)]
+#[expect(private_bounds)]
 /// Lists versions of `project`
 /// ## Usage
 /// ```

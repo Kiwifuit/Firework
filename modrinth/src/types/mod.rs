@@ -1,4 +1,4 @@
-#![allow(clippy::ptr_arg)]
+#![expect(clippy::ptr_arg)]
 #[cfg(feature = "types")]
 use serde::{Deserialize, Serialize, Serializer};
 use std::rc::Rc;
@@ -213,7 +213,7 @@ where
     )
 }
 
-#[allow(clippy::trivially_copy_pass_by_ref)]
+#[expect(clippy::trivially_copy_pass_by_ref)]
 pub(in crate::types) fn is_zero(num: &u8) -> bool {
     *num == 0
 }

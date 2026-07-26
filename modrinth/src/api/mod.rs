@@ -1,4 +1,4 @@
-#![cfg_attr(not(feature = "api"), allow(unused_imports, dead_code))]
+#![cfg_attr(not(feature = "api"), expect(unused_imports, dead_code))]
 
 use std::{rc::Rc, time::Duration};
 

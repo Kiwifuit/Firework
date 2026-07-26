@@ -90,7 +90,7 @@ impl FromStr for FabricDependencyVersion {
     type Err = DependencyVersioningError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        #[allow(clippy::wildcard_in_or_patterns)]
+        #[expect(clippy::wildcard_in_or_patterns)]
         let mode = match s
             .chars()
             .next()
